@@ -19,7 +19,7 @@ interface AppState {
   importData: (json: string) => void;
 }
 
-const DOC_REF = doc(db, 'app', 'data');
+const DOC_REF = doc(db, 'app', import.meta.env.DEV ? 'data-dev' : 'data');
 
 function generateId(): string {
   return crypto.randomUUID();

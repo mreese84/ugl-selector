@@ -4,17 +4,19 @@ import type { Trip } from '../types';
 interface TripFormProps {
   members: { id: string; name: string }[];
   trips: Trip[];
+  editTrip?: Trip;
   onSave: (trip: Omit<Trip, 'id'>) => void;
   onCancel: () => void;
 }
 
-export default function TripForm({ members, trips, onSave, onCancel }: TripFormProps) {
+export default function TripForm({ members, trips, editTrip, onSave, onCancel }: TripFormProps) {
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState(currentYear);
-  const [location, setLocation] = useState('');
-  const [selectedById, setSelectedById] = useState('');
-  const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
-  const [nextSelectorId, setNextSelectorId] = useState('');
+  const [year, setYear] = useState(editTrip?.year ?? currentYear);
+  const [month, setMonth] = useState(editTrip?.month ?? new Date().getMonth() + 1);
+  const [location, setLocation] = useState(editTrip?.location ?? '');
+  const [selectedById, setSelectedById] = useState(editTrip?.selectedById ?? '');
+  const [attendeeIds, setAttendeeIds] = useState<string[]>(editTrip?.attendeeIds ?? []);
+  const [nextSelectorId, setNextSelectorId] = useState(editTrip?.nextSelectorId ?? '');
 
   const toggleAttendee = (id: string) => {
     setAttendeeIds((prev) =>
@@ -31,6 +33,7 @@ export default function TripForm({ members, trips, onSave, onCancel }: TripFormP
     if (!canSave) return;
     onSave({
       year,
+      month,
       location: location.trim(),
       selectedById,
       attendeeIds,
@@ -44,9 +47,22 @@ export default function TripForm({ members, trips, onSave, onCancel }: TripFormP
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-      <h3 className="text-lg font-semibold text-gray-800">New Trip</h3>
+      <h3 className="text-lg font-semibold text-gray-800">{editTrip ? 'Edit Trip' : 'New Trip'}</h3>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Month</label>
+          <select
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white
+                       focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all"
+          >
+            {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+              <option key={i + 1} value={i + 1}>{m}</option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-1">Year</label>
           <input
@@ -170,7 +186,7 @@ export default function TripForm({ members, trips, onSave, onCancel }: TripFormP
                      hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed
                      transition-colors cursor-pointer"
         >
-          Save Trip
+          {editTrip ? 'Update Trip' : 'Save Trip'}
         </button>
         <button
           onClick={onCancel}

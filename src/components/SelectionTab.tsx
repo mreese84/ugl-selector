@@ -12,7 +12,11 @@ export default function SelectionTab() {
   const [showResult, setShowResult] = useState(false);
   const drawTripIdRef = useRef<string | null>(null);
 
-  const sortedTrips = useMemo(() => [...trips].sort((a, b) => b.year - a.year), [trips]);
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const formatTripDate = (t: { month?: number; year: number }) =>
+    `${t.month ? monthNames[t.month - 1] + ' ' : ''}${t.year}`;
+
+  const sortedTrips = useMemo(() => [...trips].sort((a, b) => b.year - a.year || (b.month ?? 0) - (a.month ?? 0)), [trips]);
 
   // Find the latest trip that hasn't had a draw yet
   const pendingTrip = useMemo(
@@ -86,7 +90,7 @@ export default function SelectionTab() {
     return (
       <div className="space-y-6">
         <h2 className="text-xl font-semibold text-gray-800">
-          Draw — {drawnTrip?.location ?? '?'} ({drawnTrip?.year ?? '?'})
+          Draw — {drawnTrip?.location ?? '?'} ({drawnTrip ? formatTripDate(drawnTrip) : '?'})
         </h2>
         <div className="text-center space-y-4">
           <div className="bg-green-50 border border-green-200 rounded-2xl p-6 max-w-md mx-auto">
@@ -117,7 +121,7 @@ export default function SelectionTab() {
         <h2 className="text-xl font-semibold text-gray-800">All Draws Complete</h2>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-md mx-auto">
           <p className="text-gray-500 text-sm mb-2">
-            {lastTrip.location} ({lastTrip.year})
+            {lastTrip.location} ({formatTripDate(lastTrip)})
           </p>
           <p className="text-2xl font-bold text-green-700">
             🎯 {getMemberName(lastTrip.nextSelectorId!)} picks the next location
@@ -130,7 +134,7 @@ export default function SelectionTab() {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-800">
-        Draw — {pendingTrip.location} ({pendingTrip.year})
+        Draw — {pendingTrip.location} ({formatTripDate(pendingTrip)})
       </h2>
 
       <p className="text-sm text-gray-500">

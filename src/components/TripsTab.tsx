@@ -7,11 +7,14 @@ export default function TripsTab() {
   const { isAdmin } = useAuth();
   const { members, trips, addTrip, removeTrip, updateTrip } = useAppState();
   const [showForm, setShowForm] = useState(false);
+  const [editingTripId, setEditingTripId] = useState<string | null>(null);
 
   const getMemberName = (id: string) =>
     members.find((m) => m.id === id)?.name ?? 'Unknown';
 
-  const sortedTrips = [...trips].sort((a, b) => b.year - a.year);
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const sortedTrips = [...trips].sort((a, b) => b.year - a.year || (b.month ?? 0) - (a.month ?? 0));
 
   return (
     <div className="space-y-6">
@@ -28,7 +31,7 @@ export default function TripsTab() {
         )}
       </div>
 
-      {showForm && (
+      {showForm && !editingTripId && (
         <TripForm
           members={members}
           trips={trips}
@@ -47,8 +50,20 @@ export default function TripsTab() {
       ) : (
         <div className="space-y-3">
           {sortedTrips.map((trip) => (
+            <div key={trip.id}>
+              {editingTripId === trip.id ? (
+                <TripForm
+                  members={members}
+                  trips={trips}
+                  editTrip={trip}
+                  onSave={(tripData) => {
+                    updateTrip({ ...tripData, id: trip.id });
+                    setEditingTripId(null);
+                  }}
+                  onCancel={() => setEditingTripId(null)}
+                />
+              ) : (
             <div
-              key={trip.id}
               className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3"
             >
               <div className="flex items-start justify-between">
@@ -56,7 +71,7 @@ export default function TripsTab() {
                   <h3 className="text-lg font-semibold text-gray-800">
                     {trip.location}
                   </h3>
-                  <p className="text-sm text-gray-500">{trip.year}</p>
+                  <p className="text-sm text-gray-500">{trip.month ? `${monthNames[trip.month - 1]} ` : ''}{trip.year}</p>
                 </div>
                 <div className="flex items-start gap-3">
                 <div className="text-right text-sm">
@@ -86,6 +101,15 @@ export default function TripsTab() {
                       title="Delete trip"
                     >
                       ✕
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      onClick={() => setEditingTripId(trip.id)}
+                      className="text-gray-300 hover:text-green-600 transition-colors cursor-pointer mt-0.5"
+                      title="Edit trip"
+                    >
+                      ✎
                     </button>
                   )}
                 </div>
@@ -131,6 +155,8 @@ export default function TripsTab() {
                   })}
                 </div>
               </div>
+              </div>
+              )}
             </div>
           ))}
         </div>

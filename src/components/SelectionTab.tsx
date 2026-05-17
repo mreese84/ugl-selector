@@ -143,67 +143,70 @@ export default function SelectionTab() {
         selected.
       </p>
 
-      {/* Eligibility table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-5 py-3 font-medium text-gray-500">Member</th>
-              <th className="text-center px-5 py-3 font-medium text-gray-500">Entries</th>
-              <th className="text-right px-5 py-3 font-medium text-gray-500">Chance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...pool].sort((a, b) => b.entries - a.entries).map(({ memberId, entries }) => (
-              <tr key={memberId} className="border-b border-gray-50 last:border-0">
-                <td className="px-5 py-3 font-medium text-gray-800">
-                  {getMemberName(memberId)}
-                </td>
-                <td className="px-5 py-3 text-center">
-                  <span className="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5
-                                   bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                    {entries}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-right text-gray-500">
-                  {totalEntries > 0 ? ((entries / totalEntries) * 100).toFixed(1) : 0}%
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex flex-col-reverse md:flex-row md:gap-6 gap-6">
+        {/* Left column: Eligibility table */}
+        <div className="md:flex-1">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="text-left px-5 py-3 font-medium text-gray-500">Member</th>
+                  <th className="text-center px-5 py-3 font-medium text-gray-500">Entries</th>
+                  <th className="text-right px-5 py-3 font-medium text-gray-500">Chance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...pool].sort((a, b) => b.entries - a.entries).map(({ memberId, entries }) => (
+                  <tr key={memberId} className="border-b border-gray-50 last:border-0">
+                    <td className="px-5 py-3 font-medium text-gray-800">
+                      {getMemberName(memberId)}
+                    </td>
+                    <td className="px-5 py-3 text-center">
+                      <span className="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5
+                                       bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                        {entries}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-right text-gray-500">
+                      {totalEntries > 0 ? ((entries / totalEntries) * 100).toFixed(1) : 0}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-400">
-          {pool.length} eligible · {totalEntries} total entries ·{' '}
-          <span className="text-amber-600 font-medium">
-            {getMemberName(pendingTrip.selectedById)} is ineligible (selected this location)
-          </span>
+            <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-400">
+              {pool.length} eligible · {totalEntries} total entries ·{' '}
+              <span className="text-amber-600 font-medium">
+                {getMemberName(pendingTrip.selectedById)} is ineligible (selected this location)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: Draw button / Spinner */}
+        <div className="md:w-64 shrink-0 flex flex-col items-center justify-start gap-4">
+          {!isDrawing && isAdmin && (
+            <button
+              onClick={handleDraw}
+              className="px-8 py-4 bg-green-600 text-white rounded-2xl font-semibold text-lg
+                         hover:bg-green-700 hover:shadow-lg hover:shadow-green-200/50
+                         active:scale-95 transition-all cursor-pointer w-full md:w-auto"
+            >
+              🎲 Draw a Name
+            </button>
+          )}
+
+          {isDrawing && drawnWinnerId && (
+            <SpinnerAnimation
+              names={spinnerNames}
+              winnerId={drawnWinnerId}
+              winnerName={getMemberName(drawnWinnerId)}
+              onComplete={handleAnimationComplete}
+            />
+          )}
         </div>
       </div>
-
-      {/* Draw button */}
-      {!isDrawing && isAdmin && (
-        <div className="text-center">
-          <button
-            onClick={handleDraw}
-            className="px-8 py-4 bg-green-600 text-white rounded-2xl font-semibold text-lg
-                       hover:bg-green-700 hover:shadow-lg hover:shadow-green-200/50
-                       active:scale-95 transition-all cursor-pointer"
-          >
-            🎲 Draw a Name
-          </button>
-        </div>
-      )}
-
-      {/* Spinner animation */}
-      {isDrawing && drawnWinnerId && (
-        <SpinnerAnimation
-          names={spinnerNames}
-          winnerId={drawnWinnerId}
-          winnerName={getMemberName(drawnWinnerId)}
-          onComplete={handleAnimationComplete}
-        />
-      )}
     </div>
   );
 }

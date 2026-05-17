@@ -88,7 +88,7 @@ export default function Layout({ activeTab, onTabChange, children }: LayoutProps
       </nav>
 
       {/* Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8">{children}</main>
+      <main className={`mx-auto px-4 py-8 ${activeTab === 'selection' ? 'max-w-4xl' : 'max-w-2xl'}`}>{children}</main>
     </div>
   );
 }

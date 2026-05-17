@@ -1,9 +1,12 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import type { Member, Trip } from './types';
 
 interface AppState {
   members: Member[];
   trips: Trip[];
+  loading: boolean;
   setMembers: (members: Member[]) => void;
   setTrips: (trips: Trip[]) => void;
   addMember: (name: string) => Member;
@@ -16,21 +19,7 @@ interface AppState {
   importData: (json: string) => void;
 }
 
-const MEMBERS_KEY = 'ugl-members';
-const TRIPS_KEY = 'ugl-trips';
-
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveToStorage<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
+const DOC_REF = doc(db, 'app', 'data');
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -39,15 +28,38 @@ function generateId(): string {
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [members, setMembersState] = useState<Member[]>(() =>
-    loadFromStorage<Member[]>(MEMBERS_KEY, [])
-  );
-  const [trips, setTripsState] = useState<Trip[]>(() =>
-    loadFromStorage<Trip[]>(TRIPS_KEY, [])
-  );
+  const [members, setMembersState] = useState<Member[]>([]);
+  const [trips, setTripsState] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+  const skipSync = useRef(false);
 
-  useEffect(() => saveToStorage(MEMBERS_KEY, members), [members]);
-  useEffect(() => saveToStorage(TRIPS_KEY, trips), [trips]);
+  // Real-time listener for Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(DOC_REF, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        skipSync.current = true;
+        setMembersState(data.members ?? []);
+        setTripsState(data.trips ?? []);
+      }
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  // Write to Firestore when local state changes
+  const isInitial = useRef(true);
+  useEffect(() => {
+    if (isInitial.current) {
+      isInitial.current = false;
+      return;
+    }
+    if (skipSync.current) {
+      skipSync.current = false;
+      return;
+    }
+    setDoc(DOC_REF, { members, trips });
+  }, [members, trips]);
 
   const setMembers = (m: Member[]) => setMembersState(m);
   const setTrips = (t: Trip[]) => setTripsState(t);
@@ -99,6 +111,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         members,
         trips,
+        loading,
         setMembers,
         setTrips,
         addMember,

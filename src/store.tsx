@@ -47,19 +47,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
-  // Write to Firestore when local state changes
-  const isInitial = useRef(true);
+  // Write to Firestore when local state changes (only after initial load)
   useEffect(() => {
-    if (isInitial.current) {
-      isInitial.current = false;
-      return;
-    }
+    if (loading) return;
     if (skipSync.current) {
       skipSync.current = false;
       return;
     }
     setDoc(DOC_REF, { members, trips });
-  }, [members, trips]);
+  }, [members, trips, loading]);
 
   const setMembers = (m: Member[]) => setMembersState(m);
   const setTrips = (t: Trip[]) => setTripsState(t);

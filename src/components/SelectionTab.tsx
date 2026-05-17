@@ -1,9 +1,11 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { useAppState } from '../store';
+import { useAuth } from '../auth';
 import { buildWeightedPool, drawWinner } from '../eligibility';
 import SpinnerAnimation from './SpinnerAnimation';
 
 export default function SelectionTab() {
+  const { isAdmin } = useAuth();
   const { members, trips, updateTrip } = useAppState();
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawnWinnerId, setDrawnWinnerId] = useState<string | null>(null);
@@ -94,12 +96,14 @@ export default function SelectionTab() {
             </p>
             <p className="text-green-600 mt-1">picks the next trip location!</p>
           </div>
-          <button
-            onClick={handleRedraw}
-            className="text-sm text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
-          >
-            Re-draw (undo and pick again)
-          </button>
+          {isAdmin && (
+            <button
+              onClick={handleRedraw}
+              className="text-sm text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+            >
+              Re-draw (undo and pick again)
+            </button>
+          )}
         </div>
       </div>
     );
@@ -174,7 +178,7 @@ export default function SelectionTab() {
       </div>
 
       {/* Draw button */}
-      {!isDrawing && (
+      {!isDrawing && isAdmin && (
         <div className="text-center">
           <button
             onClick={handleDraw}

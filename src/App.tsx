@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useAppState } from './store';
+import { useAuth } from './auth';
 import Layout from './components/Layout';
 import MembersTab from './components/MembersTab';
 import TripsTab from './components/TripsTab';
@@ -9,6 +10,7 @@ type Tab = 'members' | 'trips' | 'selection';
 
 function AppContent() {
   const { exportData, importData } = useAppState();
+  const { isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('trips');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,22 +47,24 @@ function AppContent() {
       {activeTab === 'selection' && <SelectionTab />}
 
       {/* Footer with data management */}
-      <div className="mt-12 pt-6 border-t border-gray-100 flex items-center justify-center gap-4 text-xs text-gray-400">
-        <button onClick={handleExport} className="hover:text-green-600 transition-colors cursor-pointer">
-          Export Data
-        </button>
-        <span>·</span>
-        <button onClick={() => fileInputRef.current?.click()} className="hover:text-green-600 transition-colors cursor-pointer">
-          Import Data
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleImport}
-          className="hidden"
-        />
-      </div>
+      {isAdmin && (
+        <div className="mt-12 pt-6 border-t border-gray-100 flex items-center justify-center gap-4 text-xs text-gray-400">
+          <button onClick={handleExport} className="hover:text-green-600 transition-colors cursor-pointer">
+            Export Data
+          </button>
+          <span>·</span>
+          <button onClick={() => fileInputRef.current?.click()} className="hover:text-green-600 transition-colors cursor-pointer">
+            Import Data
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImport}
+            className="hidden"
+          />
+        </div>
+      )}
     </Layout>
   );
 }

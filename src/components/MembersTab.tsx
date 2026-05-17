@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useAppState } from '../store';
+import { useAuth } from '../auth';
 
 export default function MembersTab() {
+  const { isAdmin } = useAuth();
   const { members, addMember, updateMember, removeMember } = useAppState();
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -36,27 +38,29 @@ export default function MembersTab() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Members</h2>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            placeholder="Add a member (e.g. Mark R)"
-            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900
-                       placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/30
-                       focus:border-green-500 transition-all"
-          />
-          <button
-            onClick={handleAdd}
-            disabled={!newName.trim()}
-            className="px-5 py-2.5 bg-green-600 text-white rounded-xl font-medium
-                       hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed
-                       transition-colors cursor-pointer"
-          >
-            Add
-          </button>
-        </div>
+        {isAdmin && (
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              placeholder="Add a member (e.g. Mark R)"
+              className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900
+                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/30
+                         focus:border-green-500 transition-all"
+            />
+            <button
+              onClick={handleAdd}
+              disabled={!newName.trim()}
+              className="px-5 py-2.5 bg-green-600 text-white rounded-xl font-medium
+                         hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed
+                         transition-colors cursor-pointer"
+            >
+              Add
+            </button>
+          </div>
+        )}
       </div>
 
       {members.length === 0 ? (
@@ -101,18 +105,22 @@ export default function MembersTab() {
               ) : (
                 <>
                   <span className="flex-1 text-gray-800 font-medium">{member.name}</span>
-                  <button
-                    onClick={() => startEdit(member.id, member.name)}
-                    className="text-gray-400 hover:text-green-600 text-sm transition-colors cursor-pointer"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => removeMember(member.id)}
-                    className="text-gray-400 hover:text-red-500 text-sm transition-colors cursor-pointer"
-                  >
-                    Remove
-                  </button>
+                  {isAdmin && (
+                    <>
+                      <button
+                        onClick={() => startEdit(member.id, member.name)}
+                        className="text-gray-400 hover:text-green-600 text-sm transition-colors cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => removeMember(member.id)}
+                        className="text-gray-400 hover:text-red-500 text-sm transition-colors cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </li>

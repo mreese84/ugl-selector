@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useAppState } from '../store';
+import { useAuth } from '../auth';
 import TripForm from './TripForm';
 
 export default function TripsTab() {
+  const { isAdmin } = useAuth();
   const { members, trips, addTrip, removeTrip, updateTrip } = useAppState();
   const [showForm, setShowForm] = useState(false);
 
@@ -15,7 +17,7 @@ export default function TripsTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800">Trips</h2>
-        {!showForm && (
+        {isAdmin && !showForm && (
           <button
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-green-600 text-white rounded-xl font-medium text-sm
@@ -73,17 +75,19 @@ export default function TripsTab() {
                     <p className="text-amber-500 text-xs mt-1">Draw pending</p>
                   )}
                 </div>
-                  <button
-                    onClick={() => {
-                      if (confirm(`Delete the ${trip.location} (${trip.year}) trip?`)) {
-                        removeTrip(trip.id);
-                      }
-                    }}
-                    className="text-gray-300 hover:text-red-500 transition-colors cursor-pointer mt-0.5"
-                    title="Delete trip"
-                  >
-                    ✕
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete the ${trip.location} (${trip.year}) trip?`)) {
+                          removeTrip(trip.id);
+                        }
+                      }}
+                      className="text-gray-300 hover:text-red-500 transition-colors cursor-pointer mt-0.5"
+                      title="Delete trip"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -95,7 +99,7 @@ export default function TripsTab() {
                   {trip.attendeeIds.map((id) => {
                     const isLocked = trip.nextSelectorId !== null;
                     const isSelector = id === trip.selectedById;
-                    const canRemove = !isLocked && !isSelector;
+                    const canRemove = isAdmin && !isLocked && !isSelector;
                     return (
                       <span
                         key={id}

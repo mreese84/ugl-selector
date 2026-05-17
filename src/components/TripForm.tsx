@@ -79,7 +79,7 @@ export default function TripForm({ members, trips, editTrip, onSave, onCancel }:
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Myrtle Beach"
+            placeholder="e.g. Lubbock, TX"
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white
                        placeholder:text-gray-400 focus:outline-none focus:ring-2
                        focus:ring-green-500/30 focus:border-green-500 transition-all"

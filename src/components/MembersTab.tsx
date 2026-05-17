@@ -45,7 +45,7 @@ export default function MembersTab() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              placeholder="Add a member (e.g. Mark R)"
+              placeholder="Add a member (e.g. John D)"
               className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-gray-900
                          placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/30
                          focus:border-green-500 transition-all"

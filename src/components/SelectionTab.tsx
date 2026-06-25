@@ -40,7 +40,7 @@ export default function SelectionTab() {
     if (!pendingTrip) return;
     drawTripIdRef.current = pendingTrip.id;
     const tripIndex = trips.findIndex((t) => t.id === pendingTrip.id);
-    const winnerId = drawWinner(trips, tripIndex);
+    const winnerId = drawWinner(trips, tripIndex, members);
     setDrawnWinnerId(winnerId);
     setIsDrawing(true);
     setShowResult(false);

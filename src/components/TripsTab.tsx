@@ -57,7 +57,7 @@ export default function TripsTab() {
                   trips={trips}
                   editTrip={trip}
                   onSave={(tripData) => {
-                    updateTrip({ ...tripData, id: trip.id });
+                    updateTrip({ ...trip, ...tripData });
                     setEditingTripId(null);
                   }}
                   onCancel={() => setEditingTripId(null)}
@@ -155,6 +155,20 @@ export default function TripsTab() {
                   })}
                 </div>
               </div>
+
+              {(trip.hasGuide || isAdmin) && (
+                <a
+                  href={`#/guide/${trip.id}`}
+                  className={`flex items-center justify-between px-4 py-2.5 -mx-1 rounded-xl text-sm font-medium transition-colors
+                    ${trip.hasGuide
+                      ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                      : 'border border-dashed border-gray-200 text-gray-400 hover:text-green-600 hover:border-green-300'
+                    }`}
+                >
+                  <span>{trip.hasGuide ? "Player's Guide" : "+ Add Player's Guide"}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              )}
               </div>
               )}
             </div>

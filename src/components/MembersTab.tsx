@@ -1,10 +1,51 @@
 import { useState } from 'react';
 import { useAppState } from '../store';
 import { useAuth } from '../auth';
+import { setMemberEmail, useMemberEmails } from '../guides';
+
+// Admin-only: the Google email that lets this member open Player's Guides.
+// Remount via key when the saved email changes so the input picks it up.
+function EmailField({ memberId, email }: { memberId: string; email: string }) {
+  const [value, setValue] = useState(email);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    const v = value.trim().toLowerCase();
+    if (v === email) return;
+    if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+      setError('Not a valid email');
+      return;
+    }
+    setError(null);
+    try {
+      await setMemberEmail(memberId, v);
+    } catch {
+      setError('Save failed');
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 mt-1">
+      <input
+        type="email"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+        placeholder="Google email for guide access"
+        className="flex-1 min-w-0 px-2 py-1 -mx-2 text-xs text-gray-500 bg-transparent rounded-md border border-transparent
+                   placeholder:text-gray-300 hover:border-gray-200 focus:outline-none focus:border-green-500
+                   focus:text-gray-800 transition-colors"
+      />
+      {error && <span className="text-xs text-red-500 shrink-0">{error}</span>}
+    </div>
+  );
+}
 
 export default function MembersTab() {
   const { isAdmin } = useAuth();
   const { members, addMember, updateMember, removeMember } = useAppState();
+  const { status: emailStatus, emails } = useMemberEmails(isAdmin);
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -104,7 +145,16 @@ export default function MembersTab() {
                 </>
               ) : (
                 <>
-                  <span className="flex-1 text-gray-800 font-medium">{member.name}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-800 font-medium">{member.name}</span>
+                    {isAdmin && emailStatus === 'ready' && (
+                      <EmailField
+                        key={`${member.id}:${emails[member.id] ?? ''}`}
+                        memberId={member.id}
+                        email={emails[member.id] ?? ''}
+                      />
+                    )}
+                  </div>
                   {isAdmin && (
                     <>
                       <button
@@ -114,7 +164,10 @@ export default function MembersTab() {
                         Edit
                       </button>
                       <button
-                        onClick={() => removeMember(member.id)}
+                        onClick={() => {
+                          removeMember(member.id);
+                          if (emails[member.id]) setMemberEmail(member.id, '');
+                        }}
                         className="text-gray-400 hover:text-red-500 text-sm transition-colors cursor-pointer"
                       >
                         Remove
@@ -130,7 +183,15 @@ export default function MembersTab() {
 
       <p className="text-sm text-gray-400">
         {members.length} member{members.length !== 1 ? 's' : ''}
+        {isAdmin && emailStatus === 'ready' && (
+          <> · {members.filter((m) => emails[m.id]).length} with Player's Guide access</>
+        )}
       </p>
+      {isAdmin && (emailStatus === 'denied' || emailStatus === 'error') && (
+        <p className="text-sm text-amber-600">
+          Couldn't load member emails. Make sure the rules in firestore.rules are published in the Firebase console.
+        </p>
+      )}
     </div>
   );
 }

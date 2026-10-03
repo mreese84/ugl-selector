@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'reese296@gmail.com';
+    }
+
+    // Signed in with a verified Google email that's on the member list (access/members)
+    function isMember() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in get(/databases/$(database)/documents/access/members).data.byMember.values();
+    }
+
+    // Public trip and member data (live site: data, local dev: data-dev)
+    match /app/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Member emails for guide access: admin only
+    match /access/members {
+      allow read, write: if isAdmin();
+    }
+
+    // Player's Guides, one per trip, members only (live site: guides, local dev: guides-dev)
+    match /guides/{tripId} {
+      allow read: if isAdmin() || isMember();
+      allow write: if isAdmin();
+    }
+    match /guides-dev/{tripId} {
+      allow read: if isAdmin() || isMember();
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -142,12 +142,25 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
   const allDates = [...guide.flights.map((f) => f.date), ...guide.rounds.map((r) => r.date)];
   const emblems = guide.teams.flatMap((t) => (t.emblem ? [t.emblem] : []));
 
+  // Player pill in their team's color, with the team emblem so teams differ by shape too
   const player = (id: string | null, key?: number) => {
-    if (!id) return <Tbd key={key} />;
+    const pill = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap';
+    if (!id) {
+      return (
+        <span key={key} className={`${pill} font-medium border border-dashed border-gray-300 text-gray-400`}>
+          TBD
+        </span>
+      );
+    }
     const team = teamOf(id);
     return (
-      <span key={key} className="inline-flex items-center gap-1.5 font-medium text-gray-800">
-        {team && <span className="w-2 h-2 rounded-full shrink-0" style={{ background: team.color }} />}
+      <span
+        key={key}
+        className={`${pill} ${team ? 'text-white' : 'bg-gray-100 text-gray-700'}`}
+        style={team ? { background: team.color } : undefined}
+        title={team?.name}
+      >
+        {team?.emblem && <Emblem name={team.emblem} className="w-3.5 h-3.5 -ml-0.5 shrink-0" />}
         {nameOf(id)}
       </span>
     );
@@ -156,25 +169,25 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
   const matchup = (group: GuideGroup, round: GuideRound) => {
     const slot = (i: number) => group.playerIds[i] ?? null;
     if (group.playerIds.every((id) => !id)) return <Tbd>Pairings TBD</Tbd>;
-    const vs = <span className="text-gray-400 text-xs px-1">vs</span>;
+    const vs = <span className="text-gray-400 text-xs">vs</span>;
     if (round.matchType === 'fourball') {
       return (
-        <span className="flex flex-col gap-1">
-          <span className="flex flex-wrap items-center gap-1.5">{player(slot(0))} & {player(slot(1))}</span>
-          <span className="flex flex-wrap items-center gap-1.5">{vs}{player(slot(2))} & {player(slot(3))}</span>
+        <span className="flex flex-col items-start gap-1.5">
+          <span className="flex flex-wrap items-center gap-1.5">{player(slot(0))}{player(slot(1))}</span>
+          <span className="flex flex-wrap items-center gap-1.5">{vs}{player(slot(2))}{player(slot(3))}</span>
         </span>
       );
     }
     if (round.matchType === 'singles') {
       return (
-        <span className="flex flex-col gap-1">
-          <span className="flex flex-wrap items-center gap-1.5">{player(slot(0))} {vs} {player(slot(1))}</span>
-          <span className="flex flex-wrap items-center gap-1.5">{player(slot(2))} {vs} {player(slot(3))}</span>
+        <span className="flex flex-col items-start gap-1.5">
+          <span className="flex flex-wrap items-center gap-1.5">{player(slot(0))}{vs}{player(slot(1))}</span>
+          <span className="flex flex-wrap items-center gap-1.5">{player(slot(2))}{vs}{player(slot(3))}</span>
         </span>
       );
     }
     return (
-      <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <span className="flex flex-wrap items-center gap-1.5">
         {group.playerIds.map((id, i) => player(id, i))}
       </span>
     );
@@ -307,11 +320,23 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
                     </p>
                     {team.memberIds.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {team.memberIds.map((id) => (
-                          <span key={id} className="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-700">
-                            {nameOf(id)}
-                          </span>
-                        ))}
+                        {[...team.memberIds]
+                          .sort((a, b) => Number(b === team.captainId) - Number(a === team.captainId))
+                          .map((id) => (
+                            <span key={id} className="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-700">
+                              {nameOf(id)}
+                              {id === team.captainId && (
+                                <span
+                                  className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full
+                                             text-[9px] font-bold text-white align-[1px]"
+                                  style={{ background: team.color }}
+                                  title="Captain"
+                                >
+                                  C
+                                </span>
+                              )}
+                            </span>
+                          ))}
                       </div>
                     ) : (
                       <>

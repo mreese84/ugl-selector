@@ -43,6 +43,7 @@ export interface GuideTeam {
   color: string; // hex
   emblem?: Emblem;
   memberIds: string[]; // empty = teams not set yet
+  captainId?: string | null;
 }
 
 // How a tee time's four slots are read:
@@ -104,4 +105,20 @@ export interface PlayerGuide {
   format: GuideFormat;
   football: GuideFootball;
   nightlife: GuideNight[];
+}
+
+// ── Teams & pairings draft ──────────────────────────────────────
+// Admin-only, in Firestore `guideDrafts/{tripId}`. When published, its teams and
+// groups are copied into the guide; otherwise members see TBD.
+
+export interface DraftGroup {
+  playerIds: (string | null)[]; // same slot order as GuideGroup
+}
+
+export interface GuideDraft {
+  published: boolean;
+  handicaps: Record<string, number>; // memberId -> handicap index
+  captains: Record<string, string>; // teamId -> memberId
+  teams: Record<string, string[]>; // teamId -> memberIds
+  rounds: Record<string, DraftGroup[]>; // roundId -> one entry per tee time
 }

@@ -12,6 +12,14 @@
   --color-green-700: #15803d;
   --color-green-800: #166534;
   --color-green-900: #14532d;
+
+  /* Admin confirmations: fade in, hold, fade out (4s, see NOTICE_MS in PairingsAdmin) */
+  --animate-notice: notice 4s ease-in-out forwards;
+  @keyframes notice {
+    0% { opacity: 0; transform: translateY(-2px); }
+    8%, 80% { opacity: 1; transform: none; }
+    100% { opacity: 0; }
+  }
 }
 
 body {

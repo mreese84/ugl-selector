@@ -3,6 +3,7 @@ import { useAppState } from '../../store';
 import { useAuth } from '../../auth';
 import { applyDraft, clearPairings, deleteGuide, saveDraft, saveGuide, useGuide, useGuideDraft } from '../../guides';
 import type { PlayerGuide } from '../../types';
+import GoogleSignInButton from '../GoogleSignInButton';
 import GuideView from './GuideView';
 import PairingsAdmin from './PairingsAdmin';
 
@@ -37,7 +38,7 @@ interface GuidePageProps {
 }
 
 export default function GuidePage({ tripId, onBack }: GuidePageProps) {
-  const { user, isAdmin, loading: authLoading, signIn } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const { trips, members, loading, updateTrip } = useAppState();
   const { status, guide } = useGuide(user ? tripId : null, user?.uid ?? null);
   const { draft, status: draftStatus, retry: retryDraft } = useGuideDraft(user ? tripId : null, isAdmin);
@@ -103,7 +104,7 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
     content = (
       <Notice title="Members only">
         <p>Sign in with the Google account the league has on file to see the Player's Guide.</p>
-        <button onClick={signIn} className={buttonClass}>Sign in</button>
+        <GoogleSignInButton size="large" text="signin_with" shape="pill" theme="outline" />
       </Notice>
     );
   } else if (status === 'denied') {

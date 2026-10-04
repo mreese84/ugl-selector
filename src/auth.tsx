@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, signOut, GoogleAuthProvider, type User } from 'firebase/auth';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth } from './firebase';
+import { forgetGoogleSignIn } from './googleSignIn';
 
 const ADMIN_EMAIL = 'reese296@gmail.com';
 
@@ -8,7 +9,6 @@ interface AuthState {
   user: User | null;
   isAdmin: boolean;
   loading: boolean;
-  signIn: () => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -25,19 +25,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const signIn = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  };
-
+  // Signing in happens through <GoogleSignInButton />
   const logOut = async () => {
+    forgetGoogleSignIn();
     await signOut(auth);
   };
 
   const isAdmin = user?.email === ADMIN_EMAIL;
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading, signIn, logOut }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, logOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '../auth';
+import GoogleSignInButton from './GoogleSignInButton';
+import UserAvatar from './UserAvatar';
 
 type Tab = 'members' | 'trips' | 'selection';
 
@@ -16,7 +18,7 @@ const tabs: { key: Tab; label: string }[] = [
 ];
 
 export default function Layout({ activeTab, onTabChange, children }: LayoutProps) {
-  const { user, isAdmin, signIn, logOut } = useAuth();
+  const { user, isAdmin, logOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -38,26 +40,24 @@ export default function Layout({ activeTab, onTabChange, children }: LayoutProps
           </div>
           <div className="shrink-0">
             {user ? (
-              <div className="flex items-center gap-2">
-                {isAdmin && (
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                    Admin
-                  </span>
-                )}
-                <button
-                  onClick={logOut}
-                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                >
-                  Sign out
-                </button>
+              <div className="flex flex-col items-end gap-1">
+                <UserAvatar key={user.uid} user={user} />
+                <div className="flex items-center gap-2">
+                  {isAdmin && (
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                      Admin
+                    </span>
+                  )}
+                  <button
+                    onClick={logOut}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                  >
+                    Sign out
+                  </button>
+                </div>
               </div>
             ) : (
-              <button
-                onClick={signIn}
-                className="text-sm text-green-600 hover:text-green-700 font-medium transition-colors cursor-pointer"
-              >
-                Sign in
-              </button>
+              <GoogleSignInButton size="medium" text="signin" shape="pill" theme="outline" />
             )}
           </div>
         </div>

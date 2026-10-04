@@ -39,6 +39,9 @@ function AppContent() {
       navigate(slug ? guidePath(slug) : homePath(), { replace: true });
     } else if (route.page === 'home' && window.location.pathname !== homePath()) {
       navigate(homePath(), { replace: true });
+    } else if (route.page === 'guide' && window.location.pathname.endsWith('/')) {
+      // GitHub Pages redirects /<trip>/guide to /<trip>/guide/ (it's a folder); keep the tidy form
+      navigate(guidePath(route.slug), { replace: true });
     }
   }, [route, loading, slugs]);
 

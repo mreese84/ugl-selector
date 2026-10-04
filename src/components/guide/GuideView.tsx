@@ -2,7 +2,7 @@ import { Fragment, useState, type CSSProperties, type ReactNode } from 'react';
 import type { GuideFlight, GuideGroup, GuideRound, GuideTeam, Member, PlayerGuide } from '../../types';
 import Emblem from './Emblem';
 import FootballCard from './FootballCard';
-import { Card, Disclosure, Field, Tbd, inputClass } from './parts';
+import { Card, Disclosure, Field, GlobeIcon, IconLink, MapPinIcon, Tbd, inputClass } from './parts';
 import { dateRange, fmt, parseDate } from './dates';
 
 const mapsUrl = (address: string) =>
@@ -408,20 +408,40 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
           return (
             <Fragment key={round.id}>
               <Card>
-                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                  <h4 className="text-lg font-semibold text-gray-800">{round.course}</h4>
-                  <p className="text-sm text-gray-500">{fmt(round.date, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h4 className="text-lg font-semibold text-gray-800">{round.course}</h4>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {fmt(round.date, { weekday: 'short', month: 'short', day: 'numeric' })}
+                      {round.fee && (
+                        <span title="Estimated green and cart fee per player">
+                          {' · '}
+                          <span className="font-semibold text-gray-800">{round.fee}</span> with cart (est.)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    {round.website && (
+                      <IconLink href={round.website} label={`${round.course} website`}>
+                        <GlobeIcon />
+                      </IconLink>
+                    )}
+                    <IconLink
+                      href={mapsUrl(`${round.course}, ${round.address ?? guide.location}`)}
+                      label={`Directions to ${round.course}`}
+                    >
+                      <MapPinIcon />
+                    </IconLink>
+                  </div>
                 </div>
-                <span className="inline-block mt-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-(--guide)/8 text-(--guide)">
+                <span className="inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full bg-(--guide)/8 text-(--guide)">
                   {round.label}
                 </span>
-                <ul className="mt-4 divide-y divide-gray-100">
+                <ul className="mt-3 divide-y divide-gray-100">
                   {round.groups.map((group, i) => (
                     <li key={i} className="flex gap-4 py-2.5 text-sm">
-                      <div className="w-20 shrink-0">
-                        <p className="font-semibold text-gray-800">{group.teeTime}</p>
-                        <p className="text-xs text-gray-400">Group {i + 1}</p>
-                      </div>
+                      <p className="w-20 shrink-0 font-semibold text-gray-800">{group.teeTime}</p>
                       <div className="flex-1 min-w-0 pt-px">
                         {matchup(group, round)}
                       </div>

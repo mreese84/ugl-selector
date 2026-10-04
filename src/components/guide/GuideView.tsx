@@ -1,8 +1,8 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useState, type CSSProperties, type ReactNode } from 'react';
 import type { GuideFlight, GuideGroup, GuideRound, GuideTeam, Member, PlayerGuide } from '../../types';
 import Emblem from './Emblem';
 import FootballCard from './FootballCard';
-import { Card, Field, Tbd, inputClass } from './parts';
+import { Card, Disclosure, Field, Tbd, inputClass } from './parts';
 import { dateRange, fmt, parseDate } from './dates';
 
 const mapsUrl = (address: string) =>
@@ -133,8 +133,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
   const sections = [
     { id: 'travel', label: 'Travel', show: guide.flights.length > 0 },
     { id: 'lodging', label: 'Lodging', show: guide.teams.length > 0 },
-    { id: 'golf', label: 'Golf', show: guide.rounds.length > 0 },
-    { id: 'format', label: 'Format', show: true },
+    { id: 'golf', label: 'Golf', show: true },
     { id: 'football', label: 'Football', show: true },
     { id: 'nightlife', label: 'Nightlife', show: guide.nightlife.length > 0 },
   ].filter((s) => s.show);
@@ -194,7 +193,42 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
     );
   };
 
-  const totalPoints = guide.format.sessions.reduce((sum, s) => sum + s.points, 0);
+  const { format } = guide;
+  const totalPoints = format.sessions.reduce((sum, s) => sum + s.points, 0);
+  const pts = (n: number) => `${n} ${n === 1 ? 'point' : 'points'}`;
+
+  // Competition rounds take the format's days in order: the first non-casual round gets
+  // the "Day 1" sessions, the next gets "Day 2", and so on
+  const sessionDays = [...new Set(format.sessions.map((s) => s.day))];
+  const competitionRounds = guide.rounds.filter((r) => r.matchType !== 'casual');
+  const sessionsFor = (round: GuideRound) => {
+    const i = competitionRounds.indexOf(round);
+    return i < 0 ? [] : format.sessions.filter((s) => s.day === sessionDays[i]);
+  };
+  const pointsAfterId = competitionRounds.at(-1)?.id ?? guide.rounds.at(-1)?.id;
+
+  const pointsCard = format.sessions.length > 0 && (
+    <Card>
+      <h4 className="text-lg font-semibold text-gray-800">Points</h4>
+      <table className="w-full text-sm mt-3">
+        <tbody>
+          {format.sessions.map((s, i) => (
+            <tr key={i} className="border-b border-gray-50">
+              <td className="py-1.5 text-gray-600">{s.day} · {s.name}</td>
+              <td className="py-1.5 text-right font-medium text-gray-800">{s.points}</td>
+            </tr>
+          ))}
+          <tr>
+            <td className="pt-2 font-semibold text-gray-800">Total</td>
+            <td className="pt-2 text-right font-semibold text-gray-800">{totalPoints}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="rounded-xl bg-(--guide) text-(--guide-on) text-center py-3 mt-4 font-semibold">
+        {format.pointsToWin} points wins
+      </div>
+    </Card>
+  );
 
   return (
     <div
@@ -359,85 +393,76 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
         </Section>
       )}
 
-      {/* Golf itinerary */}
-      {guide.rounds.length > 0 && (
-        <Section id="golf" title="Golf Itinerary">
-          {guide.rounds.map((round) => (
-            <Card key={round.id}>
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                <h4 className="text-lg font-semibold text-gray-800">{round.course}</h4>
-                <p className="text-sm text-gray-500">{fmt(round.date, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
-              </div>
-              <span className="inline-block mt-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-(--guide)/8 text-(--guide)">
-                {round.label}
-              </span>
-              <ul className="mt-4 divide-y divide-gray-100">
-                {round.groups.map((group, i) => (
-                  <li key={i} className="flex gap-4 py-2.5 text-sm">
-                    <div className="w-20 shrink-0">
-                      <p className="font-semibold text-gray-800">{group.teeTime}</p>
-                      <p className="text-xs text-gray-400">Group {i + 1}</p>
-                    </div>
-                    <div className="flex-1 min-w-0 pt-px">
-                      {matchup(group, round)}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </Card>
+      {/* Golf: format overview, each day's card with its rules, then points */}
+      <Section id="golf" title="Golf">
+        <Card>
+          <h4 className="text-lg font-semibold text-gray-800">{format.name}</h4>
+          <p className="text-sm text-gray-600 mt-1">{format.summary}</p>
+          {format.notes.map((note, i) => (
+            <p key={i} className="text-sm text-gray-500 mt-2">{note}</p>
           ))}
-        </Section>
-      )}
-
-      {/* Format */}
-      <Section id="format" title="Golf Format">
-        <Card className="space-y-5">
-          <div>
-            <h4 className="text-lg font-semibold text-gray-800">{guide.format.name}</h4>
-            <p className="text-sm text-gray-600 mt-1">{guide.format.summary}</p>
-            {guide.format.notes.map((note, i) => (
-              <p key={i} className="text-sm text-gray-500 mt-2">{note}</p>
-            ))}
-          </div>
-
-          {guide.format.sessions.map((s, i) => (
-            <div key={i} className="border-t border-gray-100 pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold text-gray-800">
-                  <span className="text-(--guide)">{s.day}</span> · {s.name}
-                </p>
-                <span className="text-xs font-medium text-gray-500 shrink-0">
-                  {s.points} pt{s.points !== 1 && 's'}
-                </span>
-              </div>
-              <ul className="mt-2 space-y-1.5 text-sm text-gray-600 list-disc pl-5 marker:text-gray-300">
-                {s.rules.map((rule, j) => <li key={j}>{rule}</li>)}
-              </ul>
-            </div>
-          ))}
-
-          <div className="border-t border-gray-100 pt-4">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Points</p>
-            <table className="w-full text-sm">
-              <tbody>
-                {guide.format.sessions.map((s, i) => (
-                  <tr key={i} className="border-b border-gray-50">
-                    <td className="py-1.5 text-gray-600">{s.day} · {s.name}</td>
-                    <td className="py-1.5 text-right font-medium text-gray-800">{s.points}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td className="pt-2 font-semibold text-gray-800">Total</td>
-                  <td className="pt-2 text-right font-semibold text-gray-800">{totalPoints}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="rounded-xl bg-(--guide) text-(--guide-on) text-center py-3 font-semibold">
-            {guide.format.pointsToWin} points wins
-          </div>
         </Card>
+
+        {guide.rounds.map((round) => {
+          const sessions = sessionsFor(round);
+          return (
+            <Fragment key={round.id}>
+              <Card>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                  <h4 className="text-lg font-semibold text-gray-800">{round.course}</h4>
+                  <p className="text-sm text-gray-500">{fmt(round.date, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+                </div>
+                <span className="inline-block mt-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-(--guide)/8 text-(--guide)">
+                  {round.label}
+                </span>
+                <ul className="mt-4 divide-y divide-gray-100">
+                  {round.groups.map((group, i) => (
+                    <li key={i} className="flex gap-4 py-2.5 text-sm">
+                      <div className="w-20 shrink-0">
+                        <p className="font-semibold text-gray-800">{group.teeTime}</p>
+                        <p className="text-xs text-gray-400">Group {i + 1}</p>
+                      </div>
+                      <div className="flex-1 min-w-0 pt-px">
+                        {matchup(group, round)}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                {sessions.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <Disclosure
+                      summary={
+                        <span className="text-sm">
+                          <span className="font-semibold text-gray-800 group-hover:text-(--guide)">Rules</span>
+                          <span className="text-gray-400">
+                            {' · '}
+                            {pts(sessions.reduce((sum, x) => sum + x.points, 0))} available
+                          </span>
+                        </span>
+                      }
+                    >
+                      <div className="pt-2 space-y-4">
+                        {sessions.map((x, i) => (
+                          <div key={i}>
+                            <div className="flex items-baseline justify-between gap-3">
+                              <p className="text-sm font-semibold text-gray-800">{x.name}</p>
+                              <span className="text-xs font-medium text-gray-500 shrink-0">{pts(x.points)}</span>
+                            </div>
+                            <ul className="mt-1.5 space-y-1.5 text-sm text-gray-600 list-disc pl-5 marker:text-gray-300">
+                              {x.rules.map((rule, j) => <li key={j}>{rule}</li>)}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </Disclosure>
+                  </div>
+                )}
+              </Card>
+              {round.id === pointsAfterId && pointsCard}
+            </Fragment>
+          );
+        })}
+        {guide.rounds.length === 0 && pointsCard}
       </Section>
 
       {/* Football */}

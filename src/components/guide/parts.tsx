@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 
 export function Tbd({ children = 'TBD' }: { children?: ReactNode }) {
   return <span className="text-gray-400 italic">{children}</span>;
@@ -15,6 +15,49 @@ export function Field({ label, children }: { label: string; children: ReactNode 
     <div>
       <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
       <p className="text-sm font-medium text-gray-800 mt-0.5">{children}</p>
+    </div>
+  );
+}
+
+export function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className={`w-5 h-5 shrink-0 text-gray-400 transition-transform duration-300 motion-reduce:transition-none
+        ${open ? 'rotate-180' : ''}`}
+    >
+      <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Expandable section that slides open (grid rows animate from 0fr to 1fr)
+export function Disclosure({ summary, children }: { summary: ReactNode; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-controls={id}
+        className="w-full flex items-center justify-between gap-3 py-1 text-left cursor-pointer group"
+      >
+        <span className="min-w-0">{summary}</span>
+        <Chevron open={open} />
+      </button>
+      <div
+        id={id}
+        className={`grid transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none
+          ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+      >
+        <div className="overflow-hidden" inert={!open}>
+          <div className={`transition-opacity duration-300 motion-reduce:transition-none ${open ? 'opacity-100' : 'opacity-0'}`}>
+            {children}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

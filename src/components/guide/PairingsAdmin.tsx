@@ -3,7 +3,7 @@ import { emptyDraft, type LoadStatus } from '../../guides';
 import { planPairings } from '../../pairings';
 import type { DraftGroup, GuideDraft, GuideRound, GuideTeam, MatchType, Member, PlayerGuide } from '../../types';
 import { fmt } from './dates';
-import { inputClass } from './parts';
+import { Chevron, inputClass } from './parts';
 
 const selectClass =
   'w-full min-w-0 px-2 py-1.5 border rounded-lg bg-white text-sm text-gray-800 ' +
@@ -189,19 +189,6 @@ interface Notice {
 }
 
 const NOTICE_MS = 4000; // matches the notice animation in index.css
-
-function Chevron({ open }: { open: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 20 20"
-      aria-hidden="true"
-      className={`w-5 h-5 shrink-0 text-gray-400 transition-transform duration-300 motion-reduce:transition-none
-        ${open ? 'rotate-180' : ''}`}
-    >
-      <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 export default function PairingsAdmin({
   guide,

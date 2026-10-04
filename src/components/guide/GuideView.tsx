@@ -1,9 +1,9 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import type { GuideGroup, GuideRound, GuideTeam, Member, PlayerGuide } from '../../types';
+import type { GuideFlight, GuideGroup, GuideRound, GuideTeam, Member, PlayerGuide } from '../../types';
 import Emblem from './Emblem';
 import FootballCard from './FootballCard';
 import { Card, Field, Tbd, inputClass } from './parts';
-import { dateRange, fmt } from './dates';
+import { dateRange, fmt, parseDate } from './dates';
 
 const mapsUrl = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
@@ -14,11 +14,35 @@ const ICAO_AIRLINES: Record<string, string> = {
   HA: 'HAL', NK: 'NKS', SY: 'SCX', UA: 'UAL', WN: 'SWA',
 };
 
-function flightAwareUrl(flight: string) {
-  const compact = flight.replace(/\s+/g, '').toUpperCase();
+// Pinned to the flight's date, so it never shows the same number on another day or route
+function flightAwareUrl(f: GuideFlight) {
+  const compact = f.flight.replace(/\s+/g, '').toUpperCase();
   const match = compact.match(/^([A-Z0-9]{2})(\d+)$/);
   const code = match ? `${ICAO_AIRLINES[match[1]] ?? match[1]}${match[2]}` : compact;
-  return `https://www.flightaware.com/live/flight/${encodeURIComponent(code)}`;
+  return `https://www.flightaware.com/live/flight/${encodeURIComponent(code)}/history/${f.date.replaceAll('-', '')}`;
+}
+
+// FlightAware lists a dated flight roughly 36–47 hours before departure (seen Oct 2026),
+// so only show its link once the flight should be there.
+const TRACKING_HOURS_AHEAD = 30;
+
+// Departure in the viewer's time zone; close enough to pick which link to show
+function departureTime(f: GuideFlight) {
+  const when = parseDate(f.date);
+  const match = f.departs?.match(/^(\d{1,2}):(\d{2})\s*([AP])M$/i);
+  if (match) {
+    const hour = (Number(match[1]) % 12) + (match[3].toUpperCase() === 'P' ? 12 : 0);
+    when.setHours(hour, Number(match[2]));
+  } else {
+    when.setHours(12);
+  }
+  return when;
+}
+
+function trackingUrl(f: GuideFlight) {
+  const opens = departureTime(f);
+  opens.setHours(opens.getHours() - TRACKING_HOURS_AHEAD);
+  return new Date() < opens ? null : flightAwareUrl(f);
 }
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
@@ -197,33 +221,38 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
       {guide.flights.length > 0 && (
         <Section id="travel" title="Official UGL Flights">
           <div className="grid sm:grid-cols-2 gap-3">
-            {guide.flights.map((f) => (
-              <Card key={f.direction}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                      {f.direction === 'departure' ? 'Departure' : 'Return'}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {fmt(f.date, { weekday: 'long', month: 'long', day: 'numeric' })}
-                    </p>
+            {guide.flights.map((f) => {
+              const trackUrl = trackingUrl(f);
+              return (
+                <Card key={f.direction}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        {f.direction === 'departure' ? 'Departure' : 'Return'}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {fmt(f.date, { weekday: 'long', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                    {trackUrl && (
+                      <a
+                        href={trackUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs font-medium text-(--guide) hover:underline shrink-0"
+                      >
+                        Track on FlightAware ↗
+                      </a>
+                    )}
                   </div>
-                  <a
-                    href={flightAwareUrl(f.flight)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs font-medium text-(--guide) hover:underline shrink-0"
-                  >
-                    FlightAware ↗
-                  </a>
-                </div>
-                <p className="text-2xl font-bold text-gray-900 tracking-tight mt-3">{f.flight}</p>
-                <div className="grid grid-cols-2 gap-3 mt-3">
-                  <Field label="From">{f.from ?? <Tbd />}{f.departs && <span className="text-gray-500 font-normal"> · {f.departs}</span>}</Field>
-                  <Field label="To">{f.to ?? <Tbd />}{f.arrives && <span className="text-gray-500 font-normal"> · {f.arrives}</span>}</Field>
-                </div>
-              </Card>
-            ))}
+                  <p className="text-2xl font-bold text-gray-900 tracking-tight mt-3">{f.flight}</p>
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    <Field label="From">{f.from ?? <Tbd />}{f.departs && <span className="text-gray-500 font-normal"> · {f.departs}</span>}</Field>
+                    <Field label="To">{f.to ?? <Tbd />}{f.arrives && <span className="text-gray-500 font-normal"> · {f.arrives}</span>}</Field>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </Section>
       )}

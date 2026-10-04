@@ -1,9 +1,10 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useAppState } from '../../store';
 import { useAuth } from '../../auth';
-import { deleteGuide, saveGuide, useGuide } from '../../guides';
+import { applyDraft, clearPairings, deleteGuide, saveDraft, saveGuide, useGuide, useGuideDraft } from '../../guides';
 import type { PlayerGuide } from '../../types';
 import GuideView from './GuideView';
+import PairingsAdmin from './PairingsAdmin';
 
 // Light shape check so a wrong file can't be saved as a guide
 function isGuide(data: unknown): data is PlayerGuide {
@@ -39,6 +40,7 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
   const { user, isAdmin, loading: authLoading, signIn } = useAuth();
   const { trips, members, loading, updateTrip } = useAppState();
   const { status, guide } = useGuide(user ? tripId : null, user?.uid ?? null);
+  const { draft, status: draftStatus, retry: retryDraft } = useGuideDraft(user ? tripId : null, isAdmin);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,8 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
     try {
       const data: unknown = JSON.parse(await file.text());
       if (!isGuide(data)) throw new Error('That file is not a Player\'s Guide.');
-      await saveGuide(trip.id, data);
+      // Keep published (or hidden) teams and pairings as they were
+      await (draft ? saveDraft(trip.id, draft, data) : saveGuide(trip.id, data));
       if (!trip.hasGuide) updateTrip({ ...trip, hasGuide: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed.');
@@ -151,11 +154,29 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
             {importInput}
           </div>
         )}
+        {isAdmin && (
+          <PairingsAdmin
+            guide={guide}
+            draft={draft}
+            status={draftStatus}
+            attendeeIds={trip.attendeeIds}
+            members={members}
+            onSave={(d) => saveDraft(trip.id, d, guide)}
+            onRetry={retryDraft}
+          />
+        )}
+        {/* The admin always sees the draft; members see it only once it's published */}
         <GuideView
-          guide={guide}
+          guide={isAdmin && draft ? applyDraft(guide, draft) : guide}
           members={members}
           attendeeCount={trip.attendeeIds.length}
-          onSave={isAdmin ? (g) => saveGuide(trip.id, g) : undefined}
+          onSave={
+            isAdmin
+              ? (g) =>
+                  // Edits arrive on the draft-filled guide; never let an unpublished draft leak into it
+                  saveGuide(trip.id, draft ? (draft.published ? applyDraft(g, draft) : clearPairings(g)) : g)
+              : undefined
+          }
         />
       </>
     );

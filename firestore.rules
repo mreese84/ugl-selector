@@ -32,5 +32,13 @@ service cloud.firestore {
       allow read: if isAdmin() || isMember();
       allow write: if isAdmin();
     }
+
+    // Draft teams, pairings, and handicaps: admin only (live site: guideDrafts, local dev: guideDrafts-dev)
+    match /guideDrafts/{tripId} {
+      allow read, write: if isAdmin();
+    }
+    match /guideDrafts-dev/{tripId} {
+      allow read, write: if isAdmin();
+    }
   }
 }

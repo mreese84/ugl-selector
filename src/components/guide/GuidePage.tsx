@@ -33,7 +33,7 @@ const buttonClass =
   'disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer';
 
 interface GuidePageProps {
-  tripId: string;
+  tripId: string | null; // null when the address doesn't match a trip
   onBack: () => void;
 }
 
@@ -96,10 +96,15 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
   );
 
   let content: ReactNode;
-  if (loading || authLoading || (user && status === 'loading')) {
-    content = <p className="text-gray-400 text-center py-8">Loading…</p>;
+  const loadingMessage = <p className="text-gray-400 text-center py-8">Loading…</p>;
+  if (loading || authLoading) {
+    content = loadingMessage;
   } else if (!trip) {
-    content = <Notice title="Trip not found" />;
+    content = (
+      <Notice title="Trip not found">
+        <p>Check the link, or pick the trip from the trips list.</p>
+      </Notice>
+    );
   } else if (!user) {
     content = (
       <Notice title="Members only">
@@ -107,6 +112,8 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
         <GoogleSignInButton size="large" text="signin_with" shape="pill" theme="outline" />
       </Notice>
     );
+  } else if (status === 'loading') {
+    content = loadingMessage;
   } else if (status === 'denied') {
     content = isAdmin ? (
       <Notice title="Firebase blocked access">

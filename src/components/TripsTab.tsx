@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAppState } from '../store';
 import { useAuth } from '../auth';
 import TripForm from './TripForm';
+import { followLink, guidePath, tripSlugs } from '../routes';
 
 export default function TripsTab() {
   const { isAdmin } = useAuth();
@@ -15,6 +16,7 @@ export default function TripsTab() {
   const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   const sortedTrips = [...trips].sort((a, b) => b.year - a.year || (b.month ?? 0) - (a.month ?? 0));
+  const slugs = tripSlugs(trips);
 
   return (
     <div className="space-y-6">
@@ -158,7 +160,8 @@ export default function TripsTab() {
 
               {(trip.hasGuide || isAdmin) && (
                 <a
-                  href={`#/guide/${trip.id}`}
+                  href={guidePath(slugs.get(trip.id)!)}
+                  onClick={(e) => followLink(e, guidePath(slugs.get(trip.id)!))}
                   className={`flex items-center justify-between px-4 py-2.5 -mx-1 rounded-xl text-sm font-medium transition-colors
                     ${trip.hasGuide
                       ? 'bg-green-50 text-green-700 hover:bg-green-100'

@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Run by hand (Actions tab → Deploy to GitHub Pages → Run workflow), e.g. so a newly added
+  # trip gets its own guide page for link previews
+  workflow_dispatch:
 
 permissions:
   contents: read

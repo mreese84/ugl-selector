@@ -1,43 +1,17 @@
-import type { Trip } from './types';
-
 // Page addresses, all under the site's base path (/ugl-selector/):
 //   /                       trips, selection, and members tabs
 //   /2026-columbia/guide    a trip's Player's Guide
-// GitHub Pages serves 404.html (a copy of index.html, see the build script) for addresses
-// that aren't files, so the app reads the path itself.
+// GitHub Pages only serves files. The build (vite.config.ts) writes a copy of index.html at each
+// trip's guide address and as 404.html for anything else, and the app reads the path itself.
 
 const BASE = import.meta.env.BASE_URL;
+
+export { tripSlugs } from './tripSlugs';
 
 export type Route =
   | { page: 'home' }
   | { page: 'guide'; slug: string }
   | { page: 'legacyGuide'; tripId: string }; // old #/guide/<tripId> links
-
-// "Columbia, SC" in 2026 -> "2026-columbia"
-function baseSlug(trip: Trip) {
-  const city = trip.location
-    .split(',')[0]
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '') // drop accents
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return `${trip.year}-${city || 'trip'}`;
-}
-
-// One address per trip. Trips that share a year and city get -2, -3… in date order.
-export function tripSlugs(trips: Trip[]): Map<string, string> {
-  const ordered = [...trips].sort((a, b) => a.year - b.year || (a.month ?? 0) - (b.month ?? 0) || a.id.localeCompare(b.id));
-  const seen = new Map<string, number>();
-  const slugs = new Map<string, string>();
-  for (const trip of ordered) {
-    const slug = baseSlug(trip);
-    const count = (seen.get(slug) ?? 0) + 1;
-    seen.set(slug, count);
-    slugs.set(trip.id, count === 1 ? slug : `${slug}-${count}`);
-  }
-  return slugs;
-}
 
 export const homePath = () => BASE;
 export const guidePath = (slug: string) => `${BASE}${encodeURIComponent(slug)}/guide`;

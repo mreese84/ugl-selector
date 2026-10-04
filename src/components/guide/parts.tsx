@@ -62,6 +62,48 @@ export function Disclosure({ summary, children }: { summary: ReactNode; children
   );
 }
 
+// Round icon button that opens a link in a new tab (label shows as a hover hint and to screen readers)
+export function IconLink({ href, label, children }: { href: string; label: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={label}
+      title={label}
+      className="w-9 h-9 shrink-0 rounded-full border border-gray-200 flex items-center justify-center text-(--guide)
+                 hover:border-(--guide) hover:bg-(--guide)/5 transition-colors"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="w-[18px] h-[18px]"
+      >
+        {children}
+      </svg>
+    </a>
+  );
+}
+
+export const GlobeIcon = () => (
+  <>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3.6 9h16.8M3.6 15h16.8M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18" />
+  </>
+);
+
+export const MapPinIcon = () => (
+  <>
+    <circle cx="12" cy="11" r="3" />
+    <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z" />
+  </>
+);
+
 export const inputClass =
   'w-full px-3 py-2 border border-gray-200 rounded-xl bg-white text-sm text-gray-900 ' +
   'focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all';

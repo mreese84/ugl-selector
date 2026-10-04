@@ -62,6 +62,9 @@ export interface GuideRound {
   label: string; // "Day 1 · 2-Man Net Best Ball"
   matchType: MatchType;
   groups: GuideGroup[];
+  fee?: string | null; // estimated green + cart fee per player, e.g. "$60"
+  website?: string | null;
+  address?: string | null; // for directions; falls back to the course name and trip location
 }
 
 export interface GuideSession {

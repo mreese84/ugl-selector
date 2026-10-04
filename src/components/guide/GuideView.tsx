@@ -142,8 +142,9 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
   const allDates = [...guide.flights.map((f) => f.date), ...guide.rounds.map((r) => r.date)];
   const emblems = guide.teams.flatMap((t) => (t.emblem ? [t.emblem] : []));
 
-  // Player pill in their team's color, with the team emblem so teams differ by shape too
-  const player = (id: string | null, key?: number) => {
+  // Player pill in their team's color, with the team emblem so teams differ by shape too.
+  // Casual rounds aren't part of the team competition, so their pills stay neutral.
+  const player = (id: string | null, key?: number, neutral = false) => {
     const pill = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap';
     if (!id) {
       return (
@@ -152,7 +153,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
         </span>
       );
     }
-    const team = teamOf(id);
+    const team = neutral ? undefined : teamOf(id);
     return (
       <span
         key={key}
@@ -188,7 +189,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
     }
     return (
       <span className="flex flex-wrap items-center gap-1.5">
-        {group.playerIds.map((id, i) => player(id, i))}
+        {group.playerIds.map((id, i) => player(id, i, true))}
       </span>
     );
   };

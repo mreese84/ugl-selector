@@ -108,6 +108,7 @@ export interface PlayerGuide {
   format: GuideFormat;
   football: GuideFootball;
   nightlife: GuideNight[];
+  handicaps?: Record<string, number>; // memberId -> handicap; copied from the draft only when teams are published
 }
 
 // ── Teams & pairings draft ──────────────────────────────────────

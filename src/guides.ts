@@ -80,7 +80,7 @@ export function useGuideDraft(tripId: string | null, isAdmin: boolean) {
   return { status, draft: data, retry };
 }
 
-// The guide with the draft's teams, captains, and groups filled in
+// The guide with the draft's teams, captains, groups, and handicaps filled in
 export function applyDraft(guide: PlayerGuide, draft: GuideDraft): PlayerGuide {
   return {
     ...guide,
@@ -89,15 +89,17 @@ export function applyDraft(guide: PlayerGuide, draft: GuideDraft): PlayerGuide {
       ...r,
       groups: r.groups.map((g, i) => ({ ...g, playerIds: draft.rounds[r.id]?.[i]?.playerIds ?? [] })),
     })),
+    handicaps: draft.handicaps,
   };
 }
 
-// The guide with teams and groups back to TBD
+// The guide with teams, groups, and handicaps back to TBD
 export function clearPairings(guide: PlayerGuide): PlayerGuide {
   return {
     ...guide,
     teams: guide.teams.map((t) => ({ ...t, memberIds: [], captainId: null })),
     rounds: guide.rounds.map((r) => ({ ...r, groups: r.groups.map((g) => ({ ...g, playerIds: [] })) })),
+    handicaps: {},
   };
 }
 

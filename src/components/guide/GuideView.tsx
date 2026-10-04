@@ -5,6 +5,9 @@ import FootballCard from './FootballCard';
 import { Card, Disclosure, Field, GlobeIcon, IconLink, MapPinIcon, Tbd, inputClass } from './parts';
 import { dateRange, fmt, parseDate } from './dates';
 
+// Handicap index with one decimal; plus handicaps are stored as negatives (+2.0 = -2)
+const formatHandicap = (h: number) => (h < 0 ? `+${(-h).toFixed(1)}` : h.toFixed(1));
+
 const mapsUrl = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
@@ -141,8 +144,9 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
   const allDates = [...guide.flights.map((f) => f.date), ...guide.rounds.map((r) => r.date)];
   const emblems = guide.teams.flatMap((t) => (t.emblem ? [t.emblem] : []));
 
-  // Player pill in their team's color, with the team emblem so teams differ by shape too.
-  // Casual rounds aren't part of the team competition, so their pills stay neutral.
+  // Player pill in their team's color, with the team emblem so teams differ by shape too,
+  // and their handicap. Casual rounds aren't part of the team competition, so their pills
+  // stay neutral and leave the handicap off.
   const player = (id: string | null, key?: number, neutral = false) => {
     const pill = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap';
     if (!id) {
@@ -153,6 +157,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
       );
     }
     const team = neutral ? undefined : teamOf(id);
+    const handicap = neutral ? undefined : guide.handicaps?.[id];
     return (
       <span
         key={key}
@@ -162,34 +167,49 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
       >
         {team?.emblem && <Emblem name={team.emblem} className="w-3.5 h-3.5 -ml-0.5 shrink-0" />}
         {nameOf(id)}
+        {handicap !== undefined && (
+          <span className="font-medium opacity-75 tabular-nums" title="Handicap">
+            {formatHandicap(handicap)}
+          </span>
+        )}
       </span>
     );
   };
 
+  // Sides face each other: team A on the left (right-aligned), team B on the right
   const matchup = (group: GuideGroup, round: GuideRound) => {
     const slot = (i: number) => group.playerIds[i] ?? null;
-    if (group.playerIds.every((id) => !id)) return <Tbd>Pairings TBD</Tbd>;
     const vs = <span className="text-gray-400 text-xs">vs</span>;
+    const left = (i: number) => <div className="justify-self-end">{player(slot(i))}</div>;
+    const right = (i: number) => <div className="justify-self-start">{player(slot(i))}</div>;
+    const grid = 'grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1.5';
     if (round.matchType === 'fourball') {
       return (
-        <span className="flex flex-col items-start gap-1.5">
-          <span className="flex flex-wrap items-center gap-1.5">{player(slot(0))}{player(slot(1))}</span>
-          <span className="flex flex-wrap items-center gap-1.5">{vs}{player(slot(2))}{player(slot(3))}</span>
-        </span>
+        <div className={grid}>
+          {left(0)}
+          <div className="row-span-2">{vs}</div>
+          {right(2)}
+          {left(1)}
+          {right(3)}
+        </div>
       );
     }
     if (round.matchType === 'singles') {
       return (
-        <span className="flex flex-col items-start gap-1.5">
-          <span className="flex flex-wrap items-center gap-1.5">{player(slot(0))}{vs}{player(slot(1))}</span>
-          <span className="flex flex-wrap items-center gap-1.5">{player(slot(2))}{vs}{player(slot(3))}</span>
-        </span>
+        <div className={grid}>
+          {left(0)}
+          {vs}
+          {right(1)}
+          {left(2)}
+          {vs}
+          {right(3)}
+        </div>
       );
     }
     return (
-      <span className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {group.playerIds.map((id, i) => player(id, i, true))}
-      </span>
+      </div>
     );
   };
 
@@ -440,11 +460,18 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
                 </span>
                 <ul className="mt-3 divide-y divide-gray-100">
                   {round.groups.map((group, i) => (
-                    <li key={i} className="flex gap-4 py-2.5 text-sm">
-                      <p className="w-20 shrink-0 font-semibold text-gray-800">{group.teeTime}</p>
-                      <div className="flex-1 min-w-0 pt-px">
-                        {matchup(group, round)}
-                      </div>
+                    <li key={i} className="py-2.5 text-sm">
+                      {group.playerIds.some(Boolean) ? (
+                        <>
+                          <p className="font-semibold text-gray-800">{group.teeTime}</p>
+                          <div className="mt-1.5">{matchup(group, round)}</div>
+                        </>
+                      ) : (
+                        <div className="flex gap-4">
+                          <p className="w-20 shrink-0 font-semibold text-gray-800">{group.teeTime}</p>
+                          <Tbd>Pairings TBD</Tbd>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

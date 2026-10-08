@@ -1,6 +1,6 @@
 import { Fragment, useState, type CSSProperties, type ReactNode } from 'react';
 import type { GuideFlight, GuideGroup, GuideRound, GuideTeam, Member, PlayerGuide } from '../../types';
-import Emblem from './Emblem';
+import Emblem, { EmblemDefs } from './Emblem';
 import FootballCard from './FootballCard';
 import { Card, Disclosure, Field, GlobeIcon, IconLink, MapPinIcon, Tbd, inputClass } from './parts';
 import { dateRange, fmt, parseDate } from './dates';
@@ -255,6 +255,8 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
       className="space-y-8"
       style={{ '--guide': guide.theme.primary, '--guide-on': guide.theme.onPrimary } as CSSProperties}
     >
+      <EmblemDefs />
+
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl bg-(--guide) text-(--guide-on) px-6 py-7">
         <div className="absolute -right-3 -bottom-4 flex items-start gap-1 opacity-20 pointer-events-none">

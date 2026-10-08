@@ -25,11 +25,14 @@ export default function Layout({ activeTab, onTabChange, children }: LayoutProps
       {/* Header */}
       <header className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-4">
-          <img
-            src={`${import.meta.env.BASE_URL}ugl-logo-badge.png`}
-            alt="UGL Logo"
-            className="w-14 h-14 object-contain shrink-0"
-          />
+          {/* Badge: the black flag logo turned white on a black circle */}
+          <div className="w-14 h-14 shrink-0 rounded-full bg-black flex items-center justify-center">
+            <img
+              src={`${import.meta.env.BASE_URL}ugl-logo-v2.png`}
+              alt="UGL Logo"
+              className="w-12 object-contain invert"
+            />
+          </div>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
               University Golf League

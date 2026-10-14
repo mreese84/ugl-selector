@@ -1,0 +1,15 @@
+{
+  "session": "fourball",
+  "match": 1,
+  "sides": {
+    "palmetto": ["mark-reese", "justin-thompson"],
+    "crescent": ["ricky-menchaca", "nick-smith"]
+  },
+  "result": { "winner": "palmetto", "margin": "3&2", "points": { "palmetto": 1, "crescent": 0 } },
+  "scores": [
+    { "player": "mark-reese",      "strokes": 17, "gross": [5, 6, 4, 6, 5, 5, 4, 5, null, 5, 4, 6, 6, 5, 5, 4, 5, 7] },
+    { "player": "justin-thompson", "strokes": 4,  "gross": [4, 5, 3, 5, 4, 4, 3, 4, 5, 4, 3, 5, 5, 4, 3, 3, 4, 5] },
+    { "player": "ricky-menchaca",  "strokes": 17, "gross": [5, 5, 4, 7, 5, 6, 3, 5, 6, 5, 4, 5, 6, 6, 5, 4, 5, 6] },
+    { "player": "nick-smith",      "strokes": 11, "gross": [5, 5, 3, 6, 5, 5, 4, 5, 6, 5, 3, 5, 6, 5, 5, 3, 5, 6] }
+  ]
+}

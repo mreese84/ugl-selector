@@ -1,0 +1,69 @@
+{
+  "edition": 2,
+  "title": "2026 UGL Invitational",
+  "location": "Columbia, SC",
+  "dates": ["2026-11-05", "2026-11-08"],
+  "format": "Modified Ryder Cup",
+  "sample": true,
+  "teams": [
+    {
+      "id": "palmetto",
+      "name": "Team Palmetto",
+      "color": "#041E42",
+      "emblem": "palmetto",
+      "captain": "mark-reese",
+      "players": ["mark-reese", "justin-thompson", "jeff-siarto", "patrick-bohac", "john-collins", "adam-cowdin"]
+    },
+    {
+      "id": "crescent",
+      "name": "Team Crescent",
+      "color": "#3A5A8C",
+      "emblem": "crescent",
+      "captain": "ricky-menchaca",
+      "players": ["ricky-menchaca", "nick-smith", "greg-dundas", "ross-gilbert", "travis-vance", "jason-sudan"]
+    }
+  ],
+  "handicaps": {
+    "adam-cowdin": 24,
+    "greg-dundas": 20,
+    "jason-sudan": 16,
+    "jeff-siarto": 10.7,
+    "john-collins": 19.3,
+    "justin-thompson": 4,
+    "mark-reese": 16.6,
+    "nick-smith": 11,
+    "patrick-bohac": 13.2,
+    "ricky-menchaca": 16.8,
+    "ross-gilbert": 11.2,
+    "travis-vance": 9.6
+  },
+  "rounds": [
+    {
+      "id": "fri",
+      "label": "Day 1",
+      "date": "2026-11-06",
+      "course": "Aiken Golf Club",
+      "par":         [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 4, 5],
+      "strokeIndex": [7, 3, 15, 1, 11, 5, 17, 9, 13, 8, 16, 4, 2, 12, 6, 18, 10, 14]
+    },
+    {
+      "id": "sat",
+      "label": "Day 2",
+      "date": "2026-11-07",
+      "course": "Columbia Country Club",
+      "par":         [4, 5, 3, 4, 4, 4, 3, 5, 4, 4, 4, 3, 5, 4, 4, 3, 4, 5],
+      "strokeIndex": [5, 9, 17, 1, 11, 3, 15, 13, 7, 6, 12, 18, 10, 2, 8, 16, 4, 14]
+    },
+    {
+      "id": "sun",
+      "label": "Casual round",
+      "date": "2026-11-08",
+      "course": "Solina Golf Club"
+    }
+  ],
+  "sessions": [
+    { "id": "fourball", "round": "fri", "name": "2-Man Net Best Ball", "format": "fourball", "scoring": "match", "points": 1, "matches": 3 },
+    { "id": "singles", "round": "sat", "name": "Singles Net Match Play", "format": "singles", "scoring": "match", "points": 1, "matches": 6 },
+    { "id": "aggregate", "round": "sat", "name": "Team Net Aggregate", "format": "aggregate", "scoring": "aggregate", "points": 2, "matches": 1 }
+  ]
+}

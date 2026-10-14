@@ -1,0 +1,9 @@
+{
+  "session": "fourball",
+  "match": 3,
+  "sides": {
+    "palmetto": ["patrick-bohac", "john-collins"],
+    "crescent": ["ross-gilbert", "jason-sudan"]
+  },
+  "result": { "winner": null, "margin": "AS", "points": { "palmetto": 0.5, "crescent": 0.5 } }
+}

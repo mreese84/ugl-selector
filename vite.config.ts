@@ -1,9 +1,11 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { tripSlugs } from './src/tripSlugs'
+import { loadHistory, publicHistory } from './scripts/loadHistory'
+import type { HistoryData } from './src/history/types'
 
 interface FirestoreField {
   stringValue?: string
@@ -26,6 +28,15 @@ async function fetchTrips(projectId: string) {
       location: f.location?.stringValue ?? '',
     }))
     .filter((trip) => trip.id && trip.location && trip.year)
+}
+
+// Copies the built index.html to <path>/index.html, so GitHub Pages serves the app there with a 200
+async function writePages(outDir: string, paths: string[]) {
+  const html = await readFile(join(outDir, 'index.html'), 'utf8')
+  for (const path of paths) {
+    await mkdir(join(outDir, path), { recursive: true })
+    await writeFile(join(outDir, path, 'index.html'), html)
+  }
 }
 
 // GitHub Pages only serves files. After building, copy index.html to each trip's guide
@@ -51,10 +62,7 @@ function guidePages(): Plugin {
       }
       try {
         const slugs = [...tripSlugs(await fetchTrips(projectId)).values()]
-        for (const slug of slugs) {
-          await mkdir(join(outDir, slug, 'guide'), { recursive: true })
-          await writeFile(join(outDir, slug, 'guide', 'index.html'), html)
-        }
+        await writePages(outDir, slugs.map((slug) => `${slug}/guide`))
         console.log(`guide pages: ${slugs.map((slug) => `${slug}/guide`).join(', ') || 'none'}`)
       } catch (err) {
         this.warn(`Couldn't load trips for guide pages (links still work via 404.html): ${err}`)
@@ -63,8 +71,66 @@ function guidePages(): Plugin {
   }
 }
 
+// Every history address, for writing their pages
+function historyPaths({ events, players }: HistoryData) {
+  if (events.length === 0) return []
+  return [
+    'history',
+    'players',
+    'superlatives',
+    ...events.flatMap((e) => [`history/${e.id}`, ...e.matches.map((m) => `history/${e.id}/${m.id}`)]),
+    ...players.map((p) => `players/${p.id}`),
+  ]
+}
+
+const HISTORY_MODULE = 'virtual:ugl-history'
+const RESOLVED_HISTORY_MODULE = `\0${HISTORY_MODULE}`
+
+// Serves the history/ folder to the app as `virtual:ugl-history`, after checking it (bad data
+// stops the build with the problems listed). Sample events show on the local dev server only.
+function historyData(): Plugin {
+  let dir = 'history'
+  let outDir = 'dist'
+  let isBuild = false
+  let paths: string[] = []
+  return {
+    name: 'ugl-history',
+    configResolved(config) {
+      dir = resolve(config.root, 'history')
+      outDir = resolve(config.root, config.build.outDir)
+      isBuild = config.command === 'build'
+    },
+    resolveId(id) {
+      if (id === HISTORY_MODULE) return RESOLVED_HISTORY_MODULE
+    },
+    async load(id) {
+      if (id !== RESOLVED_HISTORY_MODULE) return
+      const { data, errors } = await loadHistory(dir)
+      if (errors.length) this.error(`history/ has ${errors.length} problem(s):\n  ${errors.join('\n  ')}`)
+      const shown = publicHistory(data, !isBuild)
+      paths = historyPaths(shown)
+      return `export default ${JSON.stringify(shown)}`
+    },
+    // Editing a history file reloads the page with the new data
+    configureServer(server) {
+      server.watcher.add(dir)
+      server.watcher.on('all', (_event, file) => {
+        if (!file.startsWith(dir + sep)) return
+        const mod = server.moduleGraph.getModuleById(RESOLVED_HISTORY_MODULE)
+        if (mod) server.moduleGraph.invalidateModule(mod)
+        server.ws.send({ type: 'full-reload' })
+      })
+    },
+    async closeBundle() {
+      if (!isBuild) return
+      await writePages(outDir, paths)
+      if (paths.length) console.log(`history pages: ${paths.length}`)
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   base: '/ugl-selector/',
-  plugins: [react(), tailwindcss(), guidePages()],
+  plugins: [react(), tailwindcss(), guidePages(), historyData()],
 })

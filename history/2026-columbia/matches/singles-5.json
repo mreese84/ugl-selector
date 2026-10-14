@@ -1,0 +1,13 @@
+{
+  "session": "singles",
+  "match": 5,
+  "sides": {
+    "palmetto": ["john-collins"],
+    "crescent": ["jason-sudan"]
+  },
+  "result": { "winner": "palmetto", "margin": "6&5", "points": { "palmetto": 1, "crescent": 0 } },
+  "scores": [
+    { "player": "john-collins",    "strokes": 19, "gross": [5, 6, 3, 4, 5, 4, 4, 6, 5, 5, 5, 4, 5, 6, 5, 5, 7, 5] },
+    { "player": "jason-sudan",     "strokes": 16, "gross": [6, 6, 4, 5, 5, 7, 4, 6, 4, 5, 7, 4, 6, 6, 5, 2, 5, 6] }
+  ]
+}

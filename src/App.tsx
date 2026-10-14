@@ -6,9 +6,14 @@ import MembersTab from './components/MembersTab';
 import TripsTab from './components/TripsTab';
 import SelectionTab from './components/SelectionTab';
 import GuidePage from './components/guide/GuidePage';
-import { currentRoute, guidePath, homePath, navigate, tripSlugs } from './routes';
+import HistoryPages from './components/history/HistoryPages';
+import { history } from './history/data';
+import { currentRoute, guidePath, historyPath, homePath, isHistoryRoute, navigate, tripSlugs } from './routes';
 
-type Tab = 'members' | 'trips' | 'selection';
+type Tab = 'members' | 'trips' | 'selection' | 'history';
+
+// The History tab appears once there's an event to show (the live site skips sample events)
+const showHistory = history.events.length > 0;
 
 function AppContent() {
   const { trips, loading, exportData, importData } = useAppState();
@@ -39,20 +44,24 @@ function AppContent() {
       navigate(slug ? guidePath(slug) : homePath(), { replace: true });
     } else if (route.page === 'home' && window.location.pathname !== homePath()) {
       navigate(homePath(), { replace: true });
-    } else if (route.page === 'guide' && window.location.pathname.endsWith('/')) {
+    } else if (route.page !== 'home' && window.location.pathname.endsWith('/')) {
       // GitHub Pages redirects /<trip>/guide to /<trip>/guide/ (it's a folder); keep the tidy form
-      navigate(guidePath(route.slug), { replace: true });
+      navigate(window.location.pathname.replace(/\/+$/, ''), { replace: true });
     }
   }, [route, loading, slugs]);
 
-  const onGuide = route.page !== 'home';
+  const onHome = route.page === 'home';
   const guideTripId =
     route.page === 'guide' ? ([...slugs].find(([, slug]) => slug === route.slug)?.[0] ?? null) : null;
 
   const closeGuide = () => navigate(homePath());
 
   const handleTabChange = (tab: Tab) => {
-    if (onGuide) closeGuide();
+    if (tab === 'history') {
+      navigate(historyPath());
+      return;
+    }
+    if (!onHome) closeGuide();
     setActiveTab(tab);
   };
 
@@ -83,8 +92,14 @@ function AppContent() {
   };
 
   return (
-    <Layout activeTab={onGuide ? 'trips' : activeTab} onTabChange={handleTabChange}>
-      {onGuide ? (
+    <Layout
+      activeTab={isHistoryRoute(route) ? 'history' : onHome ? activeTab : 'trips'}
+      onTabChange={handleTabChange}
+      showHistory={showHistory}
+    >
+      {isHistoryRoute(route) ? (
+        <HistoryPages route={route} />
+      ) : !onHome ? (
         <GuidePage tripId={guideTripId} onBack={closeGuide} />
       ) : (
         <>
@@ -95,7 +110,7 @@ function AppContent() {
       )}
 
       {/* Footer with data management */}
-      {isAdmin && !onGuide && (
+      {isAdmin && onHome && (
         <div className="mt-12 pt-6 border-t border-gray-100 flex items-center justify-center gap-4 text-xs text-gray-400">
           <button onClick={handleExport} className="hover:text-green-600 transition-colors cursor-pointer">
             Export Data

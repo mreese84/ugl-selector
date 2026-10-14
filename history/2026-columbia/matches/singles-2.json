@@ -1,0 +1,13 @@
+{
+  "session": "singles",
+  "match": 2,
+  "sides": {
+    "palmetto": ["mark-reese"],
+    "crescent": ["ricky-menchaca"]
+  },
+  "result": { "winner": null, "margin": "AS", "points": { "palmetto": 0.5, "crescent": 0.5 } },
+  "scores": [
+    { "player": "mark-reese",      "strokes": 17, "gross": [5, 7, 4, 4, 7, 6, 3, 5, 5, 5, 6, 4, 5, 4, 6, 3, 4, 6] },
+    { "player": "ricky-menchaca",  "strokes": 17, "gross": [4, 5, 4, 5, 5, 4, 4, 7, 5, 5, 5, 4, 6, 5, 4, 4, 5, 5] }
+  ]
+}

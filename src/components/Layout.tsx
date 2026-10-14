@@ -3,22 +3,25 @@ import { useAuth } from '../auth';
 import GoogleSignInButton from './GoogleSignInButton';
 import UserAvatar from './UserAvatar';
 
-type Tab = 'members' | 'trips' | 'selection';
+type Tab = 'members' | 'trips' | 'selection' | 'history';
 
 interface LayoutProps {
   activeTab: Tab;
   onTabChange: (tab: Tab) => void;
+  showHistory: boolean;
   children: ReactNode;
 }
 
-const tabs: { key: Tab; label: string }[] = [
+const allTabs: { key: Tab; label: string }[] = [
   { key: 'trips', label: 'Trips' },
   { key: 'selection', label: 'Selection' },
   { key: 'members', label: 'Members' },
+  { key: 'history', label: 'History' },
 ];
 
-export default function Layout({ activeTab, onTabChange, children }: LayoutProps) {
+export default function Layout({ activeTab, onTabChange, showHistory, children }: LayoutProps) {
   const { user, isAdmin, logOut } = useAuth();
+  const tabs = allTabs.filter((tab) => tab.key !== 'history' || showHistory);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -74,7 +77,7 @@ export default function Layout({ activeTab, onTabChange, children }: LayoutProps
               <button
                 key={tab.key}
                 onClick={() => onTabChange(tab.key)}
-                className={`px-5 py-3 text-sm font-medium transition-colors relative cursor-pointer
+                className={`px-3 sm:px-5 py-3 text-sm font-medium transition-colors relative cursor-pointer
                   ${activeTab === tab.key
                     ? 'text-green-700'
                     : 'text-gray-500 hover:text-gray-700'

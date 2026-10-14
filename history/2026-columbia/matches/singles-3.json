@@ -1,0 +1,13 @@
+{
+  "session": "singles",
+  "match": 3,
+  "sides": {
+    "palmetto": ["justin-thompson"],
+    "crescent": ["travis-vance"]
+  },
+  "result": { "winner": "palmetto", "margin": "2 UP", "points": { "palmetto": 1, "crescent": 0 } },
+  "scores": [
+    { "player": "justin-thompson", "strokes": 4,  "gross": [3, 4, 2, 4, 5, 4, 3, 8, 3, 6, 5, 5, 7, 6, 4, 4, 4, 5] },
+    { "player": "travis-vance",    "strokes": 10, "gross": [3, 8, 6, 5, 5, 6, 4, 5, 4, 5, 5, 3, 5, 6, 5, 5, 4, 7] }
+  ]
+}

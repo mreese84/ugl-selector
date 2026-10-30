@@ -96,6 +96,9 @@ export interface GuideNight {
   date: string;
   plan: string | null;
   note?: string;
+  place?: string | null; // venue name; adds a directions link
+  address?: string | null; // for directions; falls back to the place name and trip location
+  website?: string | null;
 }
 
 export interface PlayerGuide {

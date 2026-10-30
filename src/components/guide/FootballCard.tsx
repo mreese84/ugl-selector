@@ -4,18 +4,23 @@ import type { GuideFootball } from '../../types';
 import { fmt } from './dates';
 import { Card, Field, Tbd, inputClass } from './parts';
 
-// ESPN marks TBD kickoffs as midnight Eastern, so read their date in Eastern time
-const kickoffDate = (game: EspnGame) =>
+// The trip city's date. ESPN marks TBD kickoffs as midnight Eastern, so those read in Eastern time.
+const kickoffDate = (game: EspnGame, timeZone: string | null) =>
   new Date(game.kickoff).toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
-    ...(game.timeTbd && { timeZone: 'America/New_York' }),
+    timeZone: game.timeTbd ? 'America/New_York' : (timeZone ?? undefined),
   });
 
-// Shown in the viewer's own time zone, labeled ("7:30 PM EST")
-const kickoffTime = (game: EspnGame) =>
-  new Date(game.kickoff).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+// In the trip city's time zone, labeled ("3:30 PM EST"); the viewer's own zone if the trip's is unknown
+const kickoffTime = (game: EspnGame, timeZone: string | null) =>
+  new Date(game.kickoff).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+    timeZone: timeZone ?? undefined,
+  });
 
 function TeamRow({ team, showScore, dim }: { team: EspnTeam; showScore: boolean; dim: boolean }) {
   return (
@@ -41,7 +46,7 @@ function TeamRow({ team, showScore, dim }: { team: EspnTeam; showScore: boolean;
   );
 }
 
-function LiveGame({ game }: { game: EspnGame }) {
+function LiveGame({ game, timeZone }: { game: EspnGame; timeZone: string | null }) {
   const showScore = game.state !== 'pre';
   return (
     <>
@@ -59,8 +64,8 @@ function LiveGame({ game }: { game: EspnGame }) {
         <TeamRow team={game.home} showScore={showScore} dim={game.state === 'post' && !game.home.winner} />
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-gray-100">
-        <Field label="Date">{kickoffDate(game)}</Field>
-        <Field label="Kickoff">{game.timeTbd ? <Tbd /> : kickoffTime(game)}</Field>
+        <Field label="Date">{kickoffDate(game, timeZone)}</Field>
+        <Field label="Kickoff">{game.timeTbd ? <Tbd /> : kickoffTime(game, timeZone)}</Field>
         <Field label="TV">{game.broadcast ?? <Tbd />}</Field>
         <Field label="Line">
           {game.line ? (
@@ -180,10 +185,11 @@ function EspnLinkEditor({
 
 interface FootballCardProps {
   football: GuideFootball;
+  timeZone: string | null; // the trip city's
   onSaveEventId?: (eventId: string | null) => Promise<void>; // admin only
 }
 
-export default function FootballCard({ football, onSaveEventId }: FootballCardProps) {
+export default function FootballCard({ football, timeZone, onSaveEventId }: FootballCardProps) {
   const { status, game } = useEspnGame(football.espnEventId);
   const [editing, setEditing] = useState(false);
 
@@ -207,7 +213,7 @@ export default function FootballCard({ football, onSaveEventId }: FootballCardPr
           }}
         />
       ) : game ? (
-        <LiveGame game={game} />
+        <LiveGame game={game} timeZone={timeZone} />
       ) : (
         <div className={status === 'loading' ? 'opacity-60' : ''}>
           <SavedGame football={football} />

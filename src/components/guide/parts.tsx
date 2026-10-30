@@ -10,6 +10,16 @@ export function Card({ children, className = '' }: { children: ReactNode; classN
   );
 }
 
+// "10:00 AM" with its time zone in small type ("10:00 AM EST")
+export function ZonedTime({ time, zone }: { time: string; zone: string }) {
+  return (
+    <>
+      {time}
+      {zone && <span className="ml-1 text-[0.8em] font-medium text-gray-400">{zone}</span>}
+    </>
+  );
+}
+
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>

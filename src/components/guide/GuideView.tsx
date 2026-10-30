@@ -4,12 +4,12 @@ import Emblem, { EmblemDefs } from './Emblem';
 import FootballCard from './FootballCard';
 import { Card, Disclosure, Field, GlobeIcon, IconLink, MapPinIcon, Tbd, inputClass } from './parts';
 import { dateRange, fmt, parseDate } from './dates';
+import { mapsUrl } from './links';
+import NightlifeCard from './NightlifeCard';
 
 // Handicap index with one decimal; plus handicaps are stored as negatives (+2.0 = -2)
 const formatHandicap = (h: number) => (h < 0 ? `+${(-h).toFixed(1)}` : h.toFixed(1));
 
-const mapsUrl = (address: string) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
 // FlightAware links need ICAO airline codes ("AA 1234" -> AAL1234)
 const ICAO_AIRLINES: Record<string, string> = {
@@ -138,7 +138,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
     { id: 'lodging', label: 'Lodging', show: guide.teams.length > 0 },
     { id: 'golf', label: 'Golf', show: true },
     { id: 'football', label: 'Football', show: true },
-    { id: 'nightlife', label: 'Nightlife', show: guide.nightlife.length > 0 },
+    { id: 'nightlife', label: 'Nightlife', show: guide.nightlife.length > 0 || !!onSave },
   ].filter((s) => s.show);
 
   const allDates = [...guide.flights.map((f) => f.date), ...guide.rounds.map((r) => r.date)];
@@ -524,25 +524,14 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
         />
       </Section>
 
-      {/* Nightlife */}
-      {guide.nightlife.length > 0 && (
+      {/* Nightlife (admins can add and edit nights here) */}
+      {(guide.nightlife.length > 0 || onSave) && (
         <Section id="nightlife" title="Nightlife">
-          <Card className="!py-2">
-            <ul className="divide-y divide-gray-100">
-              {guide.nightlife.map((night) => (
-                <li key={night.date} className="flex gap-4 py-3 text-sm">
-                  <div className="w-24 shrink-0">
-                    <p className="font-semibold text-gray-800">{fmt(night.date, { weekday: 'long' })}</p>
-                    <p className="text-xs text-gray-400">{fmt(night.date, { month: 'short', day: 'numeric' })}</p>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-700">{night.plan ?? <Tbd />}</p>
-                    {night.note && <p className="text-xs text-gray-400 mt-0.5">{night.note}</p>}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
+          <NightlifeCard
+            nights={guide.nightlife}
+            location={guide.location}
+            onSave={onSave && ((nightlife) => onSave({ ...guide, nightlife }))}
+          />
         </Section>
       )}
     </div>

@@ -2,7 +2,8 @@ import { Fragment, useState, type CSSProperties, type ReactNode } from 'react';
 import type { GuideFlight, GuideGroup, GuideRound, GuideTeam, Member, PlayerGuide } from '../../types';
 import Emblem, { EmblemDefs } from './Emblem';
 import FootballCard from './FootballCard';
-import { Card, Disclosure, Field, GlobeIcon, IconLink, MapPinIcon, Tbd, inputClass } from './parts';
+import { Card, Disclosure, Field, GlobeIcon, IconLink, MapPinIcon, Tbd, ZonedTime, inputClass } from './parts';
+import { airportTimeZone, tripTimeZone, zoneLabel } from './timeZones';
 import { dateRange, fmt, parseDate } from './dates';
 import { mapsUrl } from './links';
 import NightlifeCard from './NightlifeCard';
@@ -130,6 +131,7 @@ interface GuideViewProps {
 export default function GuideView({ guide, members, attendeeCount, onSave }: GuideViewProps) {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? 'Unknown';
+  const timeZone = tripTimeZone(guide);
   const teamOf = (id: string) => guide.teams.find((t) => t.memberIds.includes(id));
   const rosterSize = guide.teams.length ? Math.ceil(attendeeCount / guide.teams.length) : 0;
 
@@ -317,8 +319,25 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
                   </div>
                   <p className="text-2xl font-bold text-gray-900 tracking-tight mt-3">{f.flight}</p>
                   <div className="grid grid-cols-2 gap-3 mt-3">
-                    <Field label="From">{f.from ?? <Tbd />}{f.departs && <span className="text-gray-500 font-normal"> · {f.departs}</span>}</Field>
-                    <Field label="To">{f.to ?? <Tbd />}{f.arrives && <span className="text-gray-500 font-normal"> · {f.arrives}</span>}</Field>
+                    {/* Flight times are local to each airport, like the ticket */}
+                    <Field label="From">
+                      {f.from ?? <Tbd />}
+                      {f.departs && (
+                        <span className="text-gray-500 font-normal">
+                          {' · '}
+                          <ZonedTime time={f.departs} zone={zoneLabel(airportTimeZone(f.from), f.date)} />
+                        </span>
+                      )}
+                    </Field>
+                    <Field label="To">
+                      {f.to ?? <Tbd />}
+                      {f.arrives && (
+                        <span className="text-gray-500 font-normal">
+                          {' · '}
+                          <ZonedTime time={f.arrives} zone={zoneLabel(airportTimeZone(f.to), f.date)} />
+                        </span>
+                      )}
+                    </Field>
                   </div>
                 </Card>
               );
@@ -465,12 +484,16 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
                     <li key={i} className="py-2.5 text-sm">
                       {group.playerIds.some(Boolean) ? (
                         <>
-                          <p className="font-semibold text-gray-800">{group.teeTime}</p>
+                          <p className="font-semibold text-gray-800">
+                            <ZonedTime time={group.teeTime} zone={zoneLabel(timeZone, round.date)} />
+                          </p>
                           <div className="mt-1.5">{matchup(group, round)}</div>
                         </>
                       ) : (
                         <div className="flex gap-4">
-                          <p className="w-20 shrink-0 font-semibold text-gray-800">{group.teeTime}</p>
+                          <p className="w-28 shrink-0 font-semibold text-gray-800">
+                            <ZonedTime time={group.teeTime} zone={zoneLabel(timeZone, round.date)} />
+                          </p>
                           <Tbd>Pairings TBD</Tbd>
                         </div>
                       )}
@@ -518,6 +541,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
       <Section id="football" title="Football">
         <FootballCard
           football={guide.football}
+          timeZone={timeZone}
           onSaveEventId={
             onSave && ((espnEventId) => onSave({ ...guide, football: { ...guide.football, espnEventId } }))
           }

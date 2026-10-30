@@ -104,6 +104,7 @@ export interface GuideNight {
 export interface PlayerGuide {
   title: string; // "2026 UGL Invitational"
   location: string; // "Columbia, SC"
+  timeZone?: string; // IANA zone for the trip's times; defaults from the location's state (see guide/timeZones.ts)
   theme: GuideTheme;
   flights: GuideFlight[];
   teams: GuideTeam[];

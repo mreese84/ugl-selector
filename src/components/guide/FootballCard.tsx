@@ -3,6 +3,7 @@ import { espnGameUrl, parseEspnEventId, useEspnGame, type EspnGame, type EspnTea
 import type { GuideFootball } from '../../types';
 import { fmt } from './dates';
 import { Card, Field, Tbd, inputClass } from './parts';
+import { KickoffWeather } from './Weather';
 
 // The trip city's date. ESPN marks TBD kickoffs as midnight Eastern, so those read in Eastern time.
 const kickoffDate = (game: EspnGame, timeZone: string | null) =>
@@ -78,6 +79,9 @@ function LiveGame({ game, timeZone }: { game: EspnGame; timeZone: string | null 
           )}
         </Field>
       </div>
+      {game.state === 'pre' && !game.timeTbd && game.city && timeZone && (
+        <KickoffWeather place={game.city} kickoff={game.kickoff} timeZone={timeZone} />
+      )}
       {game.venue && (
         <p className="text-sm text-gray-500 mt-4">
           {game.venue}

@@ -7,6 +7,7 @@ import { airportTimeZone, tripTimeZone, zoneLabel } from './timeZones';
 import { dateRange, fmt, parseDate } from './dates';
 import { mapsUrl } from './links';
 import NightlifeCard from './NightlifeCard';
+import RoundWeather from './Weather';
 
 // Handicap index with one decimal; plus handicaps are stored as negatives (+2.0 = -2)
 const formatHandicap = (h: number) => (h < 0 ? `+${(-h).toFixed(1)}` : h.toFixed(1));
@@ -500,6 +501,12 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
                     </li>
                   ))}
                 </ul>
+                <RoundWeather
+                  place={round.address ?? `${round.course}, ${guide.location}`}
+                  date={round.date}
+                  timeZone={timeZone}
+                  teeTimes={round.groups.map((g) => g.teeTime)}
+                />
                 {sessions.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-gray-100">
                     <Disclosure

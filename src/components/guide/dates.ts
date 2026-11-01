@@ -20,3 +20,10 @@ export function dateRange(dates: string[]) {
   }
   return `${month(start)} ${start.getDate()} – ${month(end)} ${end.getDate()}, ${end.getFullYear()}`;
 }
+
+// "10:20 AM" -> 10.33 (hours after midnight); null if it isn't a time like that
+export function clockHours(time: string): number | null {
+  const m = time.trim().match(/^(\d{1,2}):(\d{2})\s*([AP])M$/i);
+  if (!m) return null;
+  return (Number(m[1]) % 12) + (m[3].toUpperCase() === 'P' ? 12 : 0) + Number(m[2]) / 60;
+}

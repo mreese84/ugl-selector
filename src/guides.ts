@@ -17,12 +17,12 @@ interface Loaded<T> {
   data: T | null;
 }
 
-const statusFor = (err: { code: string }): LoadStatus =>
+export const statusFor = (err: { code: string }): LoadStatus =>
   err.code === 'permission-denied' ? 'denied' : 'error';
 
 // Firestore stops a listener for good after an error (e.g. rules not published yet, or a
 // member added to the list while their page is open), so retry with backoff up to 5 minutes.
-const retryDelay = (attempt: number) => Math.min(10_000 * 2 ** attempt, 300_000);
+export const retryDelay = (attempt: number) => Math.min(10_000 * 2 ** attempt, 300_000);
 
 // Live copy of one document. `key` identifies the subscription (e.g. trip + user);
 // pass null to stay idle. `retry` resubscribes right away.

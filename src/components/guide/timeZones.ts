@@ -49,3 +49,19 @@ export function zoneLabel(timeZone: string | null, isoDate: string) {
   );
   return parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
 }
+
+// A moment's date (YYYY-MM-DD) and time of day in hours (2:30 PM -> 14.5) in a time zone
+// (the viewer's own when null)
+export function zonedParts(moment: Date, timeZone: string | null) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timeZone ?? undefined,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(moment);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return { date: `${get('year')}-${get('month')}-${get('day')}`, hours: Number(get('hour')) + Number(get('minute')) / 60 };
+}

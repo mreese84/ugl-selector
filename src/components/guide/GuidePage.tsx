@@ -4,8 +4,10 @@ import { useAuth } from '../../auth';
 import { applyDraft, clearPairings, deleteGuide, saveDraft, saveGuide, useGuide, useGuideDraft } from '../../guides';
 import type { PlayerGuide } from '../../types';
 import GoogleSignInButton from '../GoogleSignInButton';
+import FireballTracker from './Fireball';
 import GuideView from './GuideView';
 import PairingsAdmin from './PairingsAdmin';
+import { tripTimeZone } from './timeZones';
 
 // Light shape check so a wrong file can't be saved as a guide
 function isGuide(data: unknown): data is PlayerGuide {
@@ -142,6 +144,8 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
       <Notice title="The guide isn't ready yet"><p>Check back closer to the trip.</p></Notice>
     );
   } else {
+    // The admin always sees the draft; members see it only once it's published
+    const shownGuide = isAdmin && draft ? applyDraft(guide, draft) : guide;
     content = (
       <>
         {isAdmin && (
@@ -173,11 +177,19 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
             onRetry={retryDraft}
           />
         )}
-        {/* The admin always sees the draft; members see it only once it's published */}
         <GuideView
-          guide={isAdmin && draft ? applyDraft(guide, draft) : guide}
+          guide={shownGuide}
           members={members}
           attendeeCount={trip.attendeeIds.length}
+          fireball={
+            <FireballTracker
+              tripId={trip.id}
+              guide={shownGuide}
+              members={members}
+              attendeeIds={trip.attendeeIds}
+              timeZone={tripTimeZone(guide)}
+            />
+          }
           onSave={
             isAdmin
               ? (g) =>

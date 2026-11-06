@@ -26,3 +26,6 @@ dist-ssr
 
 # Player's Guide content is members-only (house addresses, travel); keep it out of the public repo
 data/guide-*.json
+
+# Full-size originals of the profile photos; the site uses the small copies in public/profiles/
+public/profile-*.jpeg

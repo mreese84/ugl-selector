@@ -194,30 +194,33 @@ function RainChart({ hours, round, active, onActive }: RainChartProps) {
         </svg>
       )}
 
-      {/* The same numbers for screen readers */}
-      <table className="sr-only">
-        <caption>Hourly forecast</caption>
-        <thead>
-          <tr>
-            <th>Hour</th>
-            <th>Chance of rain</th>
-            <th>Rain</th>
-            <th>Temperature</th>
-            <th>Wind</th>
-          </tr>
-        </thead>
-        <tbody>
-          {shown.map((h) => (
-            <tr key={h.hour}>
-              <td>{hourName(h.hour)}</td>
-              <td>{h.chance}%</td>
-              <td>{inches(h.amount)}</td>
-              <td>{Math.round(h.temp)}°F</td>
-              <td>{Math.round(h.wind)} mph</td>
+      {/* The same numbers for screen readers (in a hidden box: a table won't shrink to sr-only's 1px
+          itself, and would widen the page on phones) */}
+      <div className="sr-only">
+        <table>
+          <caption>Hourly forecast</caption>
+          <thead>
+            <tr>
+              <th>Hour</th>
+              <th>Chance of rain</th>
+              <th>Rain</th>
+              <th>Temperature</th>
+              <th>Wind</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {shown.map((h) => (
+              <tr key={h.hour}>
+                <td>{hourName(h.hour)}</td>
+                <td>{h.chance}%</td>
+                <td>{inches(h.amount)}</td>
+                <td>{Math.round(h.temp)}°F</td>
+                <td>{Math.round(h.wind)} mph</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

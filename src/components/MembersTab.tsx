@@ -42,9 +42,31 @@ function EmailField({ memberId, email }: { memberId: string; email: string }) {
   );
 }
 
+// Admin-only: the college a member is affiliated with, shown on their guide profile.
+// Suggests colleges already entered, so spellings stay consistent.
+function CollegeField({ college, onSave }: { college: string; onSave: (college: string) => void }) {
+  const [value, setValue] = useState(college);
+  return (
+    <input
+      type="text"
+      value={value}
+      list="member-colleges"
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={() => value.trim() !== college && onSave(value)}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+      placeholder="College"
+      aria-label="College"
+      className="block w-full min-w-0 px-2 py-1 -mx-2 text-xs text-gray-500 bg-transparent rounded-md border border-transparent
+                 placeholder:text-gray-300 hover:border-gray-200 focus:outline-none focus:border-green-500
+                 focus:text-gray-800 transition-colors"
+    />
+  );
+}
+
 export default function MembersTab() {
   const { isAdmin } = useAuth();
-  const { members, addMember, updateMember, removeMember } = useAppState();
+  const { members, addMember, updateMember, setMemberCollege, removeMember } = useAppState();
+  const colleges = [...new Set(members.flatMap((m) => (m.college ? [m.college] : [])))].sort();
   const { status: emailStatus, emails } = useMemberEmails(isAdmin);
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -154,6 +176,15 @@ export default function MembersTab() {
                         email={emails[member.id] ?? ''}
                       />
                     )}
+                    {isAdmin ? (
+                      <CollegeField
+                        key={`${member.id}:${member.college ?? ''}`}
+                        college={member.college ?? ''}
+                        onSave={(college) => setMemberCollege(member.id, college)}
+                      />
+                    ) : (
+                      member.college && <p className="text-xs text-gray-500 mt-0.5">{member.college}</p>
+                    )}
                   </div>
                   {isAdmin && (
                     <>
@@ -180,6 +211,13 @@ export default function MembersTab() {
           ))}
         </ul>
       )}
+
+      {/* Suggestions for the college fields */}
+      <datalist id="member-colleges">
+        {colleges.map((c) => (
+          <option key={c} value={c} />
+        ))}
+      </datalist>
 
       <p className="text-sm text-gray-400">
         {members.length} member{members.length !== 1 ? 's' : ''}

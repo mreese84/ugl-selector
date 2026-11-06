@@ -26,7 +26,7 @@ export const retryDelay = (attempt: number) => Math.min(10_000 * 2 ** attempt, 3
 
 // Live copy of one document. `key` identifies the subscription (e.g. trip + user);
 // pass null to stay idle. `retry` resubscribes right away.
-function useLiveDoc<T>(collection: string, id: string | null, key: string | null) {
+export function useLiveDoc<T>(collection: string, id: string | null, key: string | null) {
   const [state, setState] = useState<Loaded<T>>({ key: null, status: 'loading', data: null });
   const [attempt, setAttempt] = useState(0);
 

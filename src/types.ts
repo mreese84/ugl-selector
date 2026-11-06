@@ -1,6 +1,7 @@
 export interface Member {
   id: string;
   name: string;
+  college?: string; // shown on their Player's Guide profile
 }
 
 export interface Trip {

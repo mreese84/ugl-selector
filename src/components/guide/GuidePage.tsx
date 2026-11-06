@@ -7,6 +7,7 @@ import GoogleSignInButton from '../GoogleSignInButton';
 import FireballTracker from './Fireball';
 import GuideView from './GuideView';
 import PairingsAdmin from './PairingsAdmin';
+import PlayerProfile from './PlayerProfile';
 import { tripTimeZone } from './timeZones';
 
 // Light shape check so a wrong file can't be saved as a guide
@@ -46,6 +47,7 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
   const { draft, status: draftStatus, retry: retryDraft } = useGuideDraft(user ? tripId : null, isAdmin);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [profileOf, setProfileOf] = useState<string | null>(null); // member whose profile is open
   const [error, setError] = useState<string | null>(null);
 
   const trip = trips.find((t) => t.id === tripId);
@@ -181,6 +183,7 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
           guide={shownGuide}
           members={members}
           attendeeCount={trip.attendeeIds.length}
+          onOpenPlayer={setProfileOf}
           fireball={
             <FireballTracker
               tripId={trip.id}
@@ -198,6 +201,16 @@ export default function GuidePage({ tripId, onBack }: GuidePageProps) {
               : undefined
           }
         />
+        {profileOf && (
+          <PlayerProfile
+            key={profileOf}
+            tripId={trip.id}
+            memberId={profileOf}
+            guide={shownGuide}
+            members={members}
+            onClose={() => setProfileOf(null)}
+          />
+        )}
       </>
     );
   }

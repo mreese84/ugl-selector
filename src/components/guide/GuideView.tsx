@@ -127,9 +127,10 @@ interface GuideViewProps {
   members: Member[];
   attendeeCount: number;
   onSave?: (guide: PlayerGuide) => Promise<void>; // admin only; enables editing
+  fireball?: ReactNode; // the live Fireball tracker, placed after Golf
 }
 
-export default function GuideView({ guide, members, attendeeCount, onSave }: GuideViewProps) {
+export default function GuideView({ guide, members, attendeeCount, onSave, fireball }: GuideViewProps) {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? 'Unknown';
   const timeZone = tripTimeZone(guide);
@@ -140,6 +141,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
     { id: 'travel', label: 'Travel', show: guide.flights.length > 0 },
     { id: 'lodging', label: 'Lodging', show: guide.teams.length > 0 },
     { id: 'golf', label: 'Golf', show: true },
+    { id: 'fireball', label: 'Fireball', show: !!fireball },
     { id: 'football', label: 'Football', show: true },
     { id: 'nightlife', label: 'Nightlife', show: guide.nightlife.length > 0 || !!onSave },
   ].filter((s) => s.show);
@@ -543,6 +545,12 @@ export default function GuideView({ guide, members, attendeeCount, onSave }: Gui
         })}
         {guide.rounds.length === 0 && pointsCard}
       </Section>
+
+      {fireball && (
+        <Section id="fireball" title="Fireball">
+          {fireball}
+        </Section>
+      )}
 
       {/* Football */}
       <Section id="football" title="Football">

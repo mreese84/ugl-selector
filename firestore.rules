@@ -12,6 +12,13 @@ service cloud.firestore {
         && request.auth.token.email.lower() in get(/databases/$(database)/documents/access/members).data.byMember.values();
     }
 
+    // The signed-in user is this member: their email is the one on the member list for that id
+    function isSelf(memberId) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && get(/databases/$(database)/documents/access/members).data.byMember.get(memberId, '') == request.auth.token.email.lower();
+    }
+
     // Public trip and member data (live site: data, local dev: data-dev)
     match /app/{docId} {
       allow read: if true;
@@ -39,6 +46,19 @@ service cloud.firestore {
     }
     match /guideDrafts-dev/{tripId} {
       allow read, write: if isAdmin();
+    }
+
+    // Fireball shots, one doc per player per trip: members see everyone's; each player changes
+    // only their own (the admin can fix anyone's). Live site: fireball, local dev: fireball-dev.
+    match /fireball/{tripId}/players/{memberId} {
+      allow read: if isAdmin() || isMember();
+      allow create, update: if (isAdmin() || isSelf(memberId))
+        && request.resource.data.keys().hasOnly(['counts', 'updatedAt']);
+    }
+    match /fireball-dev/{tripId}/players/{memberId} {
+      allow read: if isAdmin() || isMember();
+      allow create, update: if (isAdmin() || isSelf(memberId))
+        && request.resource.data.keys().hasOnly(['counts', 'updatedAt']);
     }
   }
 }

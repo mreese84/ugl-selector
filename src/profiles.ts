@@ -26,6 +26,12 @@ export function findPlayer(memberName: string): HistoryPlayer | undefined {
   return matches.length === 1 ? matches[0] : undefined;
 }
 
+// A member's profile photo URL ("Mark R" -> /ugl-selector/profiles/mark-reese.jpg), or null
+export function photoFor(memberName: string) {
+  const photo = findPlayer(memberName)?.photo;
+  return photo ? `${import.meta.env.BASE_URL}${photo}` : null;
+}
+
 // A player's bio, live. Pass uid so the listener restarts after sign-in.
 export function useBio(playerKey: string, uid: string | null) {
   const { status, data } = useLiveDoc<ProfileDoc>(PROFILES, playerKey, uid ? `${playerKey}:${uid}` : null);

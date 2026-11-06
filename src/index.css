@@ -13,6 +13,13 @@
   --color-green-800: #166534;
   --color-green-900: #14532d;
 
+  /* The drawn winner's photo: grows in with a little bounce */
+  --animate-reveal: reveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1.15) both;
+  @keyframes reveal {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: none; }
+  }
+
   /* Admin confirmations: fade in, hold, fade out (4s, see NOTICE_MS in PairingsAdmin) */
   --animate-notice: notice 4s ease-in-out forwards;
   @keyframes notice {

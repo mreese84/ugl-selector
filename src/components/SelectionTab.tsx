@@ -2,7 +2,23 @@ import { useState, useMemo, useCallback, useRef } from 'react';
 import { useAppState } from '../store';
 import { useAuth } from '../auth';
 import { buildWeightedPool, drawWinner } from '../eligibility';
+import { photoFor } from '../profiles';
 import SpinnerAnimation from './SpinnerAnimation';
+
+// The winner's profile photo, or the trophy for anyone without one yet
+function WinnerPhoto({ name, size }: { name: string; size: 'large' | 'small' }) {
+  const photo = photoFor(name);
+  if (!photo) return <p className={size === 'large' ? 'text-3xl mb-2' : 'text-2xl mb-1'}>🏆</p>;
+  return (
+    <img
+      src={photo}
+      alt={name}
+      className={`mx-auto object-cover object-[50%_25%] rounded-2xl shadow-lg ring-4 ring-white
+                  animate-reveal motion-reduce:animate-none
+                  ${size === 'large' ? 'w-48 h-64 mb-4' : 'w-24 h-32 mb-3'}`}
+    />
+  );
+}
 
 export default function SelectionTab() {
   const { isAdmin } = useAuth();
@@ -41,6 +57,9 @@ export default function SelectionTab() {
     drawTripIdRef.current = pendingTrip.id;
     const tripIndex = trips.findIndex((t) => t.id === pendingTrip.id);
     const winnerId = drawWinner(trips, tripIndex, members);
+    // Load the winner's photo while the names spin, so it's ready the moment the name lands
+    const photo = winnerId && photoFor(getMemberName(winnerId));
+    if (photo) new Image().src = photo;
     setDrawnWinnerId(winnerId);
     setIsDrawing(true);
     setShowResult(false);
@@ -94,7 +113,7 @@ export default function SelectionTab() {
         </h2>
         <div className="text-center space-y-4">
           <div className="bg-green-50 border border-green-200 rounded-2xl p-6 max-w-md mx-auto">
-            <p className="text-3xl mb-2">🏆</p>
+            <WinnerPhoto name={getMemberName(drawnWinnerId)} size="large" />
             <p className="text-2xl font-bold text-green-700">
               {getMemberName(drawnWinnerId)}
             </p>
@@ -120,6 +139,7 @@ export default function SelectionTab() {
       <div className="space-y-6 text-center py-8">
         <h2 className="text-xl font-semibold text-gray-800">All Draws Complete</h2>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-md mx-auto">
+          <WinnerPhoto name={getMemberName(lastTrip.nextSelectorId!)} size="small" />
           <p className="text-gray-500 text-sm mb-2">
             {lastTrip.location} ({formatTripDate(lastTrip)})
           </p>

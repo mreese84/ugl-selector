@@ -22,6 +22,9 @@ export function validateHistory(data: HistoryData): string[] {
     }
     if (known.has(p.id)) errors.push(`history/players.json: "${p.id}" is listed twice`);
     if (typeof p.name !== 'string' || !p.name.trim()) errors.push(`history/players.json: "${p.id}" needs a name`);
+    if (p.photo !== undefined && !/^profiles\/[a-z0-9-]+\.(jpg|jpeg|png|webp)$/.test(String(p.photo))) {
+      errors.push(`history/players.json: "${p.id}" photo should look like "profiles/${p.id}.jpg"`);
+    }
     known.add(p.id);
   }
 

@@ -120,6 +120,41 @@ function TeamEditor({
   );
 }
 
+// A player's name tag: a button that opens their profile when profiles are on, else plain text
+function NameTag({
+  onOpen,
+  className,
+  style,
+  title,
+  children,
+}: {
+  onOpen?: () => void;
+  className: string;
+  style?: CSSProperties;
+  title?: string;
+  children: ReactNode;
+}) {
+  if (!onOpen) {
+    return (
+      <span className={className} style={style} title={title}>
+        {children}
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`${className} cursor-pointer transition hover:brightness-95 active:scale-95
+                  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--guide)`}
+      style={style}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+}
+
 // ── Main view ───────────────────────────────────────────────────
 
 interface GuideViewProps {
@@ -128,9 +163,10 @@ interface GuideViewProps {
   attendeeCount: number;
   onSave?: (guide: PlayerGuide) => Promise<void>; // admin only; enables editing
   fireball?: ReactNode; // the live Fireball tracker, placed after Golf
+  onOpenPlayer?: (memberId: string) => void; // makes player names open their profile
 }
 
-export default function GuideView({ guide, members, attendeeCount, onSave, fireball }: GuideViewProps) {
+export default function GuideView({ guide, members, attendeeCount, onSave, fireball, onOpenPlayer }: GuideViewProps) {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? 'Unknown';
   const timeZone = tripTimeZone(guide);
@@ -164,8 +200,9 @@ export default function GuideView({ guide, members, attendeeCount, onSave, fireb
     const team = neutral ? undefined : teamOf(id);
     const handicap = neutral ? undefined : guide.handicaps?.[id];
     return (
-      <span
+      <NameTag
         key={key}
+        onOpen={onOpenPlayer && (() => onOpenPlayer(id))}
         className={`${pill} ${team ? 'text-white' : 'bg-gray-100 text-gray-700'}`}
         style={team ? { background: team.color } : undefined}
         title={team?.name}
@@ -177,7 +214,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave, fireb
             {formatHandicap(handicap)}
           </span>
         )}
-      </span>
+      </NameTag>
     );
   };
 
@@ -402,7 +439,11 @@ export default function GuideView({ guide, members, attendeeCount, onSave, fireb
                         {[...team.memberIds]
                           .sort((a, b) => Number(b === team.captainId) - Number(a === team.captainId))
                           .map((id) => (
-                            <span key={id} className="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-700">
+                            <NameTag
+                              key={id}
+                              onOpen={onOpenPlayer && (() => onOpenPlayer(id))}
+                              className="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-700"
+                            >
                               {nameOf(id)}
                               {id === team.captainId && (
                                 <span
@@ -414,7 +455,7 @@ export default function GuideView({ guide, members, attendeeCount, onSave, fireb
                                   C
                                 </span>
                               )}
-                            </span>
+                            </NameTag>
                           ))}
                       </div>
                     ) : (

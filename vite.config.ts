@@ -71,15 +71,16 @@ function guidePages(): Plugin {
   }
 }
 
-// Every history address, for writing their pages
-function historyPaths({ events, players }: HistoryData) {
+// Every history address, for writing their pages (player pages only for those who've played)
+function historyPaths({ events }: HistoryData) {
   if (events.length === 0) return []
+  const played = new Set(events.flatMap((e) => e.teams.flatMap((t) => t.players)))
   return [
     'history',
     'players',
     'superlatives',
     ...events.flatMap((e) => [`history/${e.id}`, ...e.matches.map((m) => `history/${e.id}/${m.id}`)]),
-    ...players.map((p) => `players/${p.id}`),
+    ...[...played].map((id) => `players/${id}`),
   ]
 }
 

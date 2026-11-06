@@ -1,6 +1,6 @@
 // Reads the repo's history/ folder (used by the Vite build and the history scripts)
 
-import { readdir, readFile } from 'node:fs/promises';
+import { access, readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { EventFile, HistoryData, HistoryEvent, HistoryMatch, HistoryPlayer, MatchFile } from '../src/history/types.ts';
 import { validateHistory } from '../src/history/validate.ts';
@@ -42,12 +42,20 @@ export async function loadHistory(dir: string): Promise<{ data: HistoryData; err
   }
   events.sort((a, b) => b.id.localeCompare(a.id));
   const data = { players, events };
-  return { data, errors: validateHistory(data) };
+  const errors = validateHistory(data);
+  // Photos live in public/ next to the history folder
+  for (const p of Array.isArray(players) ? players : []) {
+    if (typeof p?.photo !== 'string') continue;
+    try {
+      await access(join(dir, '..', 'public', p.photo));
+    } catch {
+      errors.push(`history/players.json: "${p.id}" photo public/${p.photo} doesn't exist`);
+    }
+  }
+  return { data, errors };
 }
 
-// What the live site shows: no sample events, and only players who have played
+// What the live site shows: no sample events. Every player stays, for their guide profile.
 export function publicHistory(data: HistoryData, includeSamples: boolean): HistoryData {
-  const events = data.events.filter((e) => includeSamples || !e.sample);
-  const played = new Set(events.flatMap((e) => e.teams.flatMap((t) => t.players)));
-  return { players: data.players.filter((p) => played.has(p.id)), events };
+  return { players: data.players, events: data.events.filter((e) => includeSamples || !e.sample) };
 }

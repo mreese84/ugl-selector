@@ -20,11 +20,16 @@ history/
 ## players.json
 
 ```json
-[{ "id": "jeff-siarto", "name": "Jeff Siarto" }]
+[{ "id": "jeff-siarto", "name": "Jeff Siarto", "photo": "profiles/jeff-siarto.jpg" }]
 ```
 
 `id` is permanent: first-last, lowercase, hyphenated. Every other file refers to players by it.
 Never change an id once it's used. To fix a misspelled name, edit `name` only.
+
+`photo` is optional and shows on the player's profile in the Player's Guide. It goes in
+`public/profiles/`, named after the id, about 600×800 (portrait, 3:4) so it loads quickly on a phone.
+A player's college is set on the site's Members page, and bios are written in the app (admin only)
+and stay members-only.
 
 ## event.json
 

@@ -5,6 +5,7 @@ import type { Emblem } from '../types.ts';
 export interface HistoryPlayer {
   id: string; // "jeff-siarto"; permanent
   name: string;
+  photo?: string; // under public/, e.g. "profiles/jeff-siarto.jpg"
 }
 
 export interface EventTeam {

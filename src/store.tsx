@@ -11,6 +11,7 @@ interface AppState {
   setTrips: (trips: Trip[]) => void;
   addMember: (name: string) => Member;
   updateMember: (id: string, name: string) => void;
+  setMemberCollege: (id: string, college: string) => void;
   removeMember: (id: string) => void;
   addTrip: (trip: Omit<Trip, 'id'>) => Trip;
   updateTrip: (trip: Trip) => void;
@@ -72,6 +73,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // Blank clears it (the field is left out, since Firestore rejects undefined values)
+  const setMemberCollege = (id: string, college: string) => {
+    setMembersState((prev) =>
+      prev.map((m) => {
+        if (m.id !== id) return m;
+        const next = { ...m };
+        if (college.trim()) next.college = college.trim();
+        else delete next.college;
+        return next;
+      })
+    );
+  };
+
   const removeMember = (id: string) => {
     setMembersState((prev) => prev.filter((m) => m.id !== id));
   };
@@ -112,6 +126,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setTrips,
         addMember,
         updateMember,
+        setMemberCollege,
         removeMember,
         addTrip,
         updateTrip,

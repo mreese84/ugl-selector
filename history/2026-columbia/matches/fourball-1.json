@@ -2,14 +2,14 @@
   "session": "fourball",
   "match": 1,
   "sides": {
-    "palmetto": ["mark-reese", "justin-thompson"],
-    "crescent": ["ricky-menchaca", "nick-smith"]
+    "palmetto": ["john-collins", "greg-dundas"],
+    "crescent": ["patrick-bohac", "adam-cowdin"]
   },
-  "result": { "winner": "palmetto", "margin": "3&2", "points": { "palmetto": 1, "crescent": 0 } },
+  "result": { "winner": "palmetto", "margin": "4&3", "points": { "palmetto": 1, "crescent": 0 } },
   "scores": [
-    { "player": "mark-reese",      "strokes": 17, "gross": [5, 6, 4, 6, 5, 5, 4, 5, null, 5, 4, 6, 6, 5, 5, 4, 5, 7] },
-    { "player": "justin-thompson", "strokes": 4,  "gross": [4, 5, 3, 5, 4, 4, 3, 4, 5, 4, 3, 5, 5, 4, 3, 3, 4, 5] },
-    { "player": "ricky-menchaca",  "strokes": 17, "gross": [5, 5, 4, 7, 5, 6, 3, 5, 6, 5, 4, 5, 6, 6, 5, 4, 5, 6] },
-    { "player": "nick-smith",      "strokes": 11, "gross": [5, 5, 3, 6, 5, 5, 4, 5, 6, 5, 3, 5, 6, 5, 5, 3, 5, 6] }
+    { "player": "john-collins",  "strokes": 20, "gross": [4, 8, 6, 3, 7, 6, 6, 6, 5, 5, 5, 5, 7, 4, 5, 4, 6, 6] },
+    { "player": "greg-dundas",   "strokes": 21, "gross": [6, 7, 6, 4, 7, 7, 7, 4, 5, 7, 6, 6, 7, 6, 7, 4, 6, 5] },
+    { "player": "patrick-bohac", "strokes": 14, "gross": [6, 7, 7, 4, 6, 4, 6, 6, 4, 6, 5, 7, 6, 6, 5, 5, 5, 3] },
+    { "player": "adam-cowdin",   "strokes": 26, "gross": [6, 8, 8, 6, 4, 6, 8, 7, 6, 7, 7, 7, 8, 5, 7, 4, 7, 4] }
   ]
 }

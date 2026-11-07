@@ -91,6 +91,26 @@ Total points and the number needed to win are computed from the sessions and the
   - `gross`: 18 scores in hole order; `null` means no score (picked up or didn't play the hole).
   - Players keep their full 18 holes after a match ends; the match status stops where the match was decided.
 
+## Adding a round from Squabbit
+
+Export each group's scorecard from Squabbit as a CSV, then convert a whole session at once:
+
+```
+node scripts/squabbit.ts 2026-columbia fourball ~/Downloads/November_6_2026*.csv
+```
+
+Singles need who played whom, as player ids:
+
+```
+node scripts/squabbit.ts 2026-columbia singles ~/Downloads/November_7_2026*.csv \
+  --pair jason-sudan:adam-cowdin --pair justin-thompson:ross-gilbert
+```
+
+The script numbers matches in tee-time order and works out each result from the scorecards. It also
+fills in the round's par and stroke index, and any missing handicaps, from the export. It checks its
+net scores against Squabbit's hole by hole and runs the checks below. Rerunning a session rewrites
+its files.
+
 The build and the dev server check these files and stop with a clear message when something doesn't
 add up. For example: an unknown player id, points that don't match the session, a scorecard that
 disagrees with the result, or aggregate totals that don't match the day's scorecards.
